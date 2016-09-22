@@ -10,6 +10,23 @@
 	th {
 		text-align: left;
 	}
+	
+	.settingsBox {
+		width: 240px;
+		padding: 5px;
+		margin: 5px;
+		border: 1px solid black;
+		line-height: 1.5;
+	}
+	.settingsBox select, .settingsBox button {
+		float: right;
+		position: relative;
+	}
+	
+	body {
+		font-family: sans-serif;
+	}
+	
 </style>
 <script>
 
@@ -95,54 +112,162 @@ $(document).ready(function() {
 	if($('table').length > 0) {
 		return;
 	}
-	var form = $("<form>").appendTo('body');
+	
+	var mostEffective = generateMostEffectiveForm('defender');
+	$("<div>").text("Find most effective attacker against a specific defender").addClass("settingsBox").append(mostEffective).appendTo('body');
+	
+	
+		var useful = generateMostEffectiveForm('attacker');
+	$("<div>").text("Find what your attacker is good at").addClass("settingsBox").append(useful).appendTo('body');
+	
+});
+
+
+function generateMostEffectiveForm(forWhat) {
+	var form = $("<form>");
 	$("<strong>Pokemon: </strong>").appendTo(form);
-	var select = $("<select id='pokemon'>").appendTo('form');
+	var select = $("<select>").appendTo(form);
 	for(var i in PokemonSorted) {
 		$("<option value='"+i+"'>"+i+"</option>").appendTo(select);
 	}
 	$('<br>').appendTo(form);
 	$("<strong>Level: </strong>").appendTo(form);
-	var selectlevel = $("<select id='level'>").appendTo('form');
+	var selectlevel = $("<select id='level'>").appendTo(form);
 	for(var i = 1; i <= 40; i = i + 0.5) {
 		$("<option value='"+i+"'>"+i+"</option>").appendTo(selectlevel);
 	}
 	$('<br>').appendTo(form);
 	$("<strong>Quick Move: </strong>").appendTo(form);
-	$('<span id="fastMoveContainer">').appendTo(form);
+	var fastMoveContainer = $('<span>').appendTo(form);
 	$('<br>').appendTo(form);
 	$("<strong>Special Move: </strong>").appendTo(form);
-	$('<span id="specialMoveContainer">').appendTo(form);
+	var specialMoveContainer = $('<span>').appendTo(form);
 	$('<br>').appendTo(form);
 	$("<strong>Dodge: </strong>").appendTo(form);
-	$("<select id='dodge'><option value='none'>None</option><option value='quick'>Quick moves</option><option value='charge'>Charge moves</option><option value='both'>Both</option></select>").appendTo('form');
+	var dodge = $("<select><option value='none'>None</option><option value='quick'>Quick moves</option><option value='charge'>Charge moves</option><option value='both'>Both</option></select>").appendTo(form);
 	$('<br>').appendTo(form);
 	$('<button>Go!</button>').appendTo(form).on('click', function(ev) {
 		ev.preventDefault();
 		ev.stopPropagation();
-		var defender = newDefender($('#pokemon').val(), $('#quick').val(), $('#special').val(), $('#level').val());
-		showMostEffectiveAttackers(defender, $('#dodge').val());
-	});
-	
-	select.on('change', function() {
-		$("#fastMoveContainer").empty();
-		$("#specialMoveContainer").empty();
-
-		var selectquick = $("<select id='quick'>").appendTo("#fastMoveContainer");
-		for(var i in PokemonSorted[ $("#pokemon").val() ]['fastMoves']) {
-			$("<option value='"+ PokemonSorted[ $("#pokemon").val() ]['fastMoves'][i] +"'>"+ PokemonSorted[ $("#pokemon").val() ]['fastMoves'][i] +"</option>").appendTo(selectquick);
+		if(forWhat == 'defender') {
+			var defender = newDefender(select.val(), form.find('.quick').val(), form.find('.special').val(), selectlevel.val());
+			showMostEffectiveAttackers(defender, dodge.val());
+		} else {
+			var attacker = newAttacker(select.val(), form.find('.quick').val(), form.find('.special').val(), selectlevel.val()); // actually attacker
+			showLeastEffectiveDefender(attacker, dodge.val());
 		}
 		
-		var selectspecial = $("<select id='special'>").appendTo("#specialMoveContainer");
-		for(var i in PokemonSorted[ $("#pokemon").val() ]['specialMoves']) {
-			$("<option value='"+ PokemonSorted[ $("#pokemon").val() ]['specialMoves'][i] +"'>"+ PokemonSorted[ $("#pokemon").val() ]['specialMoves'][i] +"</option>").appendTo(selectspecial);
+	});
+	$('<br>').appendTo(form);
+	
+	select.on('change', function() {
+		fastMoveContainer.empty();
+		specialMoveContainer.empty();
+
+		var selectquick = $("<select class='quick'>").appendTo(fastMoveContainer);
+		for(var i in PokemonSorted[ select.val() ? select.val() : 'Bulbasaur' ]['fastMoves']) {
+			$("<option value='"+ PokemonSorted[ select.val() ? select.val() : 'Bulbasaur' ]['fastMoves'][i] +"'>"+ PokemonSorted[ select.val() ? select.val() : 'Bulbasaur' ]['fastMoves'][i] +"</option>").appendTo(selectquick);
+		}
+		
+		var selectspecial = $("<select class='special'>").appendTo(specialMoveContainer);
+		for(var i in PokemonSorted[ select.val() ? select.val() : 'Bulbasaur' ]['specialMoves']) {
+			$("<option value='"+ PokemonSorted[ select.val() ? select.val() : 'Bulbasaur' ]['specialMoves'][i] +"'>"+ PokemonSorted[ select.val() ? select.val() : 'Bulbasaur' ]['specialMoves'][i] +"</option>").appendTo(selectspecial);
 		}
 
 	});
-});
+	select.trigger('change');
+	
+	return form;
+
+}
 
 //console.log(attacker);
 //console.log(defender);
+
+
+function showLeastEffectiveDefender(attacker, dodge) {
+	var dodgeQuick = false;
+	var dodgeSpecial = false;
+	if(dodge == "both") {
+		dodgeQuick = true;
+		dodgeSpecial = true;	
+	}
+	if(dodge == "quick") {
+		dodgeQuick = true;
+	}
+	if(dodge == "charge") {
+		dodgeSpecial = true;
+	}
+	
+	$('body').empty();
+	
+	$("<div>").html("Least effective defenders (with at least more than double the CP) against a level " + attacker.level + " " + attacker.name + " with " + attacker.selectedFast.name + " and " + attacker.selectedSpecial.name + ".<br>CP: " + attacker.CP + " HP: " + attacker.HP + " attack: " + attacker.attack + " defense: " + attacker.defense + "<br>All pokemons have IV 15/15/15<br><br>Used HP and remaning HP % refers to the " + attacker.name + ", while the rest of the data points is for the defender.<br><br><br>").appendTo('body');
+
+	var resulttable = $('<table>');
+	resulttable.append($("<thead><tr><th>#</th><th>Name</th><th>Quick Attack</th><th>Special Attack</th><th>Level</th><th>CP</th><th>HP</th><th>Used<br>HP</th><th>Remaning<br>HP %</th><th>Time<br>Needed</th></tr></thead>"));
+	for(var i in PokemonSorted) {
+		for(var j in PokemonSorted[i]['fastMoves']) {
+			for(var k in PokemonSorted[i]['specialMoves']) {
+				var defender = null;
+				var level = 1;
+				do {
+					defender = newDefender(PokemonSorted[i]['name'], PokemonSorted[i]['fastMoves'][j], PokemonSorted[i]['specialMoves'][k], level);
+					level = level + 0.5;
+					level = parseFloat(parseFloat(level).toFixed(1));
+					if(level > 40) {
+						defender = null;
+						break;
+					}
+				} while(defender['CP'] < attacker['CP'] * 2);
+				if(!defender) {
+					continue;
+				}
+				attacker = calculatePower(attacker, defender, false, false); // the _defender_ can never dodge
+				defender = calculatePower(defender, attacker, dodgeQuick, dodgeSpecial); //the _attacker_ is dodging, so the damage from the defender is less
+				var result = gym_battle(attacker, defender, dodgeQuick, dodgeSpecial);	
+
+
+				if(!result) {
+					console.log("battle failed");
+					console.log(attacker);
+					console.log(defender);
+					console.log(result);
+					continue;
+				}
+				if(result.time <= 0) {
+					continue;
+				}
+				if(result.attacker <= 0) {
+					continue;
+				}
+				var resultrow = $('<tr>');
+				resultrow.append($('<td>').text(defender['number']));
+				resultrow.append($('<td>').text(defender['name']));
+				var fastmv = $('<td>').text(defender['selectedFast']['name']);
+
+				if(defender['selectedFast']['type'] == defender['type'][0] || defender['selectedFast']['type'] == defender['type'][1]) {
+					fastmv.css("font-weight", "bold");
+				}
+				resultrow.append(fastmv);
+				var specialmv = $('<td>').text(defender['selectedSpecial']['name']);
+				if(defender['selectedSpecial']['type'] == defender['type'][0] || defender['selectedSpecial']['type'] == defender['type'][1]) {
+					specialmv.css("font-weight", "bold");
+				}
+				resultrow.append(specialmv);
+				resultrow.append($('<td>').text(defender['level']));
+				resultrow.append($('<td>').text(defender['CP']));
+				resultrow.append($('<td>').text(defender['HP']));
+				resultrow.append($('<td>').text(attacker['HP'] - result['attacker']));
+				resultrow.append($('<td>').text(Math.round( 100 * result['attacker'] / attacker['HP']), 0));
+				resultrow.append($('<td>').text(Math.round(99 - (result['time'] / 1000), 0)));
+				resultrow.appendTo(resulttable);
+			}
+		}
+	}
+
+	resulttable.appendTo('body');
+	$('table').DataTable();
+}
 
 
 function showMostEffectiveAttackers(defender, dodge) {
@@ -161,20 +286,20 @@ function showMostEffectiveAttackers(defender, dodge) {
 	
 	$('body').empty();
 	
-	$("<div>").html("Most effective attackers (with at less than half the CP) against a " + defender.name + " with " + defender.selectedFast.name + " and " + defender.selectedSpecial.name + ".<br>CP: " + defender.CP + " HP: " + defender.HP + " attack: " + defender.attack + " defense: " + defender.defense + "<br>All pokemons have IV 15/15/15<br><br><br>").appendTo('body');
+	$("<div>").html("Most effective attackers (with at least less than half the CP) against a level " + defender.level + " " + defender.name + " with " + defender.selectedFast.name + " and " + defender.selectedSpecial.name + ".<br>CP: " + defender.CP + " HP: " + defender.HP + " attack: " + defender.attack + " defense: " + defender.defense + "<br>All pokemons have IV 15/15/15<br><br><br>").appendTo('body');
 
 	var resulttable = $('<table>');
 	resulttable.append($("<thead><tr><th>#</th><th>Name</th><th>Quick Attack</th><th>Special Attack</th><th>Level</th><th>CP</th><th>HP</th><th>Used<br>HP</th><th>Remaning<br>HP %</th><th>Time<br>Needed</th></tr></thead>"));
 	for(var i in PokemonSorted) {
 		for(var j in PokemonSorted[i]['fastMoves']) {
 			for(var k in PokemonSorted[i]['specialMoves']) {
-				defenderCP = defender['CP'];
+				var attacker = null;
 				var level = 40;
 				do {
-					var attacker = newAttacker(PokemonSorted[i]['name'], PokemonSorted[i]['fastMoves'][j], PokemonSorted[i]['specialMoves'][k], level);
+					attacker = newAttacker(PokemonSorted[i]['name'], PokemonSorted[i]['fastMoves'][j], PokemonSorted[i]['specialMoves'][k], level);
 					level = level - 0.5;
 					level = parseFloat(parseFloat(level).toFixed(1));
-				} while(defenderCP  < attacker['CP'] * 2 && attacker['level'] > 1);
+				} while(defender['CP'] < attacker['CP'] * 2 && attacker['level'] > 1);
 				attacker = calculatePower(attacker, defender, false, false); // the _defender_ can never dodge
 				defender = calculatePower(defender, attacker, dodgeQuick, dodgeSpecial); //the _attacker_ is dodging, so the damage from the defender is less
 				var result = gym_battle(attacker, defender, dodgeQuick, dodgeSpecial);
