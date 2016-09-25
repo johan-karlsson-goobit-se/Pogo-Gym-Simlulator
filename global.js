@@ -5,6 +5,7 @@ $(document).ready(function() {
 	(new Form()).bestMoveset().appendTo('body');
 	$("<p style='clear: both;'><strong>Tie cut of: </strong> If the result of a battle differs with less than this percentage, ignore the winning battle and pretend that the move set that have won the most battles was most effective against this defender as well. This is useful if you want a list of move sets that is <i>good enough</i> instead of perfect.</p>").appendTo('body');
 	$("<p>This tool is primarilly bult to analyze attacker performance for prestiging gyms. Your pokemon will always have half the CP of the defending pokemons. As a result of this, you will very likely want to select a low level, else you won't get any results. (Eg, a level 25 Dragonite wont give any results, as there isn't any 5000 CP pokemons it can beat.)</p>").appendTo('body');	
+	$("<p>Used HP and Remaining HP% always refers to the pokemon selected on page 1, while the other stats (unless specifically noted) belong to the pokemon listed on that row.</p>").appendTo('body');
 	$("<p>This tool is in alpha state. This means that, although I HOPE it gives reasonable results, there may be bugs and errors. Don't make any decisions or draw any conclutions based on the output of this tool.</p>").appendTo('body');
 	$("<p>There are forms of randomness built into this tool, so the results may differ for different times you run the simulations. It currently only runs each battle once, but a future version will run multiple simulations and average the results. If you get results that are unbelivable, its most likely because they are. Try to re-run the simulation and see if the new result differs.</p>").appendTo('body');
 });
@@ -233,7 +234,7 @@ function showMostEffectiveAttackers(defender, dodge) {
 
 function showLeastEffectiveDefender(attacker, dodge) {
 	var resultsView = new ResultsView();
-	resultsView.addDescription("Least effective defenders (with at least more than double the CP)", attacker);
+	resultsView.addDescription("Least effective defenders (with more than double the CP)", attacker);
 	resultsView.addHeader(['#', 'Name', 'Quick Attack', 'Special Attack', 'Level', 'CP', 'HP', 'Used<br>HP', 'Remaining<br>HP %', 'Time<br>Needed']);
 
 	for(var i in data.pokemon) {

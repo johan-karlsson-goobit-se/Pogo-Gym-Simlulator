@@ -4,7 +4,7 @@ function ResultsView() {
 	
 	this.addDescription = function(text, defender) {
 		if(defender) {
-			this.description = text + " against a level " + defender.level + " " + defender.name + " with " + defender.selectedFast.name + " and " + defender.selectedSpecial.name + ".<br>CP: " + defender.CP + " HP: " + defender.HP + " attack: " + defender.attack + " defense: " + defender.defense + "<br>All pokemons have IV 15/15/15<br><br><br>";
+			this.description = text + " against a level " + defender.level + " " + defender.name + " with " + defender.selectedFast.name + " and " + defender.selectedSpecial.name + ".<br>CP: " + defender.CP + " HP: " + defender.HP + " attack: " + defender.attack.toFixed(4) + " defense: " + defender.defense.toFixed(4) + "<br>All pokemons have IV 15/15/15<br><br><br>";
 		} else {
 			this.description = text;
 		}
