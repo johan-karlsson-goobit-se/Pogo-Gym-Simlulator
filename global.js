@@ -1017,16 +1017,17 @@ function showPairTwoPokemons(name1, quickmove1, chargemove1, name2, quickmove2, 
 };
 
 
-function showMostEffectiveAttackers(defender, dodge) {
+function showMostEffectiveAttackers(defender, dodge, repeats) {
 	var resultsView = new ResultsView();
 	resultsView.addDescription("Most effective attackers (with less than half the CP)", defender);
-	resultsView.addHeader(['#', 'Name', 'Quick Attack', 'Special Attack', 'Level', 'CP', 'HP', 'Used<br>HP', 'Remaining<br>HP %', 'Time<br>Needed']);
+	resultsView.addHeader(['#', 'Name', 'Quick Attack', 'Special Attack', 'Level', 'CP', 'HP', 'Used<br>HP', 'Remaining<br>HP %', 'Time<br>Needed', 'Victories']);
 
 	for(var i in data.pokemon) {
 		for(var j in data.pokemon[i]['fastMoves']) {
 			for(var k in data.pokemon[i]['specialMoves']) {
 				var attacker = Pokemon.newAttackerWithMaxCP(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], defender['CP'] / 2);
-				var result = (new Battle(attacker, defender, dodge)).fight();
+				//var result = (new Battle(attacker, defender, dodge)).fight();
+				var result = (new Battle(attacker, defender, dodge)).repeatBattle(repeats);
 
 				if(result.time <= 0 || result.attacker <= 0) {
 					continue;
@@ -1043,6 +1044,7 @@ function showMostEffectiveAttackers(defender, dodge) {
 					attacker['HP'] - result['attacker'],
 					Math.round( 100 * result['attacker'] / attacker['HP']),
 					Math.round(99 - result['time'] / 1000),
+					result['victories'],
 				]);
 			}
 		}
@@ -1050,10 +1052,10 @@ function showMostEffectiveAttackers(defender, dodge) {
 	resultsView.outputResults();
 };
 
-function showLeastEffectiveDefender(attacker, dodge) {
+function showLeastEffectiveDefender(attacker, dodge, repeats) {
 	var resultsView = new ResultsView();
 	resultsView.addDescription("Least effective defenders (with more than double the CP)", attacker);
-	resultsView.addHeader(['#', 'Name', 'Quick Attack', 'Special Attack', 'Level', 'CP', 'HP', 'Used<br>HP', 'Remaining<br>HP %', 'Time<br>Needed']);
+	resultsView.addHeader(['#', 'Name', 'Quick Attack', 'Special Attack', 'Level', 'CP', 'HP', 'Used<br>HP', 'Remaining<br>HP %', 'Time<br>Needed', 'Victories']);
 
 	for(var i in data.pokemon) {
 		for(var j in data.pokemon[i]['fastMoves']) {
@@ -1062,7 +1064,8 @@ function showLeastEffectiveDefender(attacker, dodge) {
 				if(!defender) {
 					continue;
 				}
-				var result = (new Battle(attacker, defender, dodge)).fight();
+				var result = (new Battle(attacker, defender, dodge)).repeatBattle(repeats);
+				//var result = (new Battle(attacker, defender, dodge)).fight();
 
 				if(result.time <= 0 || result.attacker <= 0) {
 					continue;
@@ -1079,6 +1082,7 @@ function showLeastEffectiveDefender(attacker, dodge) {
 					attacker['HP'] - result['attacker'],
 					Math.round( 100 * result['attacker'] / attacker['HP']),
 					Math.round(99 - result['time'] / 1000),
+					result['victories'],
 				]);
 			}
 		}

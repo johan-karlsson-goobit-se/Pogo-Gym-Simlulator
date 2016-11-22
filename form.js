@@ -203,13 +203,14 @@ function Form() {
 		addQuickMoveController(pokemonController);
 		addChargeMoveController(pokemonController);
 		addDodgeController();
+		addRepeatBattleController();
 		addGoButton(function(form, config) {
 			if(config.forWhat == 'defender') {
 				var defender = Pokemon.newDefender(getPokemon(), getQuickMove(), getChargeMove(), getLevel());
-				showMostEffectiveAttackers(defender, getDodge());
+				showMostEffectiveAttackers(defender, getDodge(), getRepeatBattle());
 			} else {
 				var attacker = Pokemon.newAttacker(getPokemon(), getQuickMove(), getChargeMove(), getLevel());
-				showLeastEffectiveDefender(attacker, getDodge());
+				showLeastEffectiveDefender(attacker, getDodge(), getRepeatBattle());
 			}
 			
 		}, { forWhat : forWhat });
