@@ -941,8 +941,16 @@ function showPairTwoPokemons(name1, quickmove1, chargemove1, name2, quickmove2, 
 				}
 				
 				var attacker1isTheWinner = false;
+					if(optimize_for == 'battles_won') {
+						if(result2['attacker'] <= 0) {
+							attacker1isTheWinner = true;
+						}
+						
+						if(result1['victories'] > result2['victories']) {
+							attacker1isTheWinner = true;
+						}
 				
-				if(optimize_for == 'hp') {
+					} else if(optimize_for == 'hp') {
 					if(result2['attacker'] <= 0) {
 						attacker1isTheWinner = true;
 					}
