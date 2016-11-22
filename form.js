@@ -14,7 +14,10 @@ function Form() {
 		return select;
 	};
 	
-	function getPokemon() {
+	function getPokemon(me) {
+		if(me) {
+			return me.val();
+		}
 		return that.pokemonController.val();
 	};
 	
@@ -34,6 +37,22 @@ function Form() {
 		return that.levelController.val();
 	};
 	
+	function addMaxCPController() {
+		$("<strong>Max CP: </strong>").appendTo(form);
+		var selectlevel = $("<select>").appendTo(form);
+		for(var i = 10; i <= 3500; i = i + 10) {
+			$("<option value='"+i+"'>"+i+"</option>").appendTo(selectlevel);
+		}
+		$('<br>').appendTo(form);
+		
+		that.maxCPController = selectlevel;
+		return selectlevel;
+	};
+	
+	function getMaxCP() {
+		return that.maxCPController.val();
+	};
+	
 	function addQuickMoveController(pokemonController) {
 		$("<strong>Quick Move: </strong>").appendTo(form);
 		var fastMoveContainer = $('<span>').appendTo(form);
@@ -49,9 +68,13 @@ function Form() {
 			}
 		});
 		pokemonController.trigger('change');
+		return fastMoveContainer;
 	};
 	
-	function getQuickMove() {
+	function getQuickMove(me) {
+		if(me) {
+			return me.find('.quick').val();
+		}
 		return form.find('.quick').val();
 	};
 	
@@ -70,9 +93,13 @@ function Form() {
 			}
 		});
 		pokemonController.trigger('change');
+		return fastMoveContainer;
 	};
 	
-	function getChargeMove() {
+	function getChargeMove(me) {
+		if(me) {
+			return me.find('.charge').val();
+		}
 		return form.find('.charge').val();
 	};
 	
@@ -117,7 +144,7 @@ function Form() {
 	};
 	function addOptimizeForController() {
 		$("<strong>Optimize: </strong>").appendTo(form);
-		var select = $("<select><option value='quick'>Quick battle</option><option value='hp'>Use little HP</option><option value='hp_percent'>Use little HP %</option></select>").appendTo(form);
+		var select = $("<select><option value='battles_won'>Battles won</option><option value='quick'>Quickest battle</option><option value='hp'>Use little HP</option><option value='hp_percent'>Use little HP %</option></select>").appendTo(form);
 		$('<br>').appendTo(form);
 		
 		that.optimizeForController = select;
@@ -126,6 +153,39 @@ function Form() {
 	
 	function getOptimizeFor() {
 		return that.optimizeForController.val();
+	};
+	
+	function addRepeatBattleController() {
+		$("<strong>Repeat battle: </strong>").appendTo(form);
+		var select = $("<select>").appendTo(form);
+		for(var i = 1; i <= 1000; i = i + 1) {
+			$("<option value='"+i+"'>"+i+" time"+ (i==1 ? "" : "s") +"</option>").appendTo(select);
+		}
+		$('<br>').appendTo(form);
+		
+		that.repeatBattleController = select;
+		return select;
+	};
+	
+	function getRepeatBattle() {
+		return that.repeatBattleController.val();
+	};
+
+	function addWeakAgainstController() {
+		$("<strong>Weak against: </strong>").appendTo(form);
+		var select = $("<select>").appendTo(form);
+		$("<option value='Any'>Any</option>").appendTo(select);
+		for(var i in data.effective) {
+			$("<option value='"+i+"'>"+i+"</option>").appendTo(select);
+		}
+		$('<br>').appendTo(form);
+		
+		that.weakAgainstController = select;
+		return select;
+	};
+	
+	function getWeakAgainstBattle() {
+		return that.weakAgainstController.val();
 	};
 	
 	function addGoButton(callback, config) {
@@ -164,11 +224,64 @@ function Form() {
 		addDodgeController();
 		addTieController();
 		addOptimizeForController();
+		addRepeatBattleController();
+		addWeakAgainstController();
 		addGoButton(function(form) {
-			showBestMoveSet(getPokemon(), getLevel(), getDodge(), getTie(), getOptimizeFor());
+			showBestMoveSet(getPokemon(), getLevel(), getDodge(), getTie(), getOptimizeFor(), getRepeatBattle(), getWeakAgainstBattle());
 		});
 
 		var text = 'Find the most effective moveset of a pokemon';
+		return $("<div>").text(text).addClass("settingsBox").append(form);
+	};
+	
+	this.bestPokemon = function() {
+		addMaxCPController();
+		addDodgeController();
+		addTieController();
+		addOptimizeForController();
+		addRepeatBattleController();
+		addWeakAgainstController();
+		addGoButton(function(form) {
+			showBestPokemon(getMaxCP(), getDodge(), getTie(), getOptimizeFor(), getRepeatBattle(), getWeakAgainstBattle());
+		});
+
+		var text = 'Find the best pokemon';
+		return $("<div>").text(text).addClass("settingsBox").append(form);
+	};
+	
+	this.bestAgainst = function() {
+		addDodgeController();
+		addOptimizeForController();
+		addRepeatBattleController();
+		addWeakAgainstController();
+		addGoButton(function(form) {
+			showBestAgainst(getDodge(), getOptimizeFor(), getRepeatBattle(), getWeakAgainstBattle());
+		});
+
+		var text = 'Find the best pokemon against pokemons weak against specific type';
+		return $("<div>").text(text).addClass("settingsBox").append(form);
+	};
+	
+	this.pairPokemon = function() {
+		var pokemonController = addPokemonController();
+		var q1 = addQuickMoveController(pokemonController);
+		var c1 = addChargeMoveController(pokemonController);
+		
+		var pokemonController2 = addPokemonController();
+		var q2 = addQuickMoveController(pokemonController2);
+		var c2 = addChargeMoveController(pokemonController2);
+		
+		addMaxCPController();
+		addDodgeController();
+
+		addOptimizeForController();
+		addRepeatBattleController();
+		addWeakAgainstController();
+		addGoButton(function(form) {
+			showPairTwoPokemons(getPokemon(pokemonController), getQuickMove(q1), getChargeMove(c1), getPokemon(pokemonController2), getQuickMove(q2), getChargeMove(c2), getMaxCP(), getDodge(), getOptimizeFor(), getRepeatBattle(), getWeakAgainstBattle());
+		});
+
+		var text = 'Pair two pokemon against each other';
 		return $("<div>").text(text).addClass("settingsBox").append(form);
 	};
 };

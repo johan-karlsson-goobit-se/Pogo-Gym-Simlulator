@@ -8,7 +8,7 @@ th {
 	margin: 5px;
 	border: 1px solid black;
 	line-height: 1.5;
-	height: 220px;
+	height: 340px;
 	position: relative;
 	float: left;
 }
@@ -23,4 +23,12 @@ body {
 
 table.dataTable tbody td {
 	padding: 2px;
+}
+
+.smallFont {
+	font-size: 9px;
+}
+
+.infodiv {
+	min-height: 90px;
 }

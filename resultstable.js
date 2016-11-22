@@ -24,11 +24,14 @@ function ResultsView() {
 		}
 	};
 	this.outputResults = function(doNotClear) {
-		if(!doNotClear) {
-			$('body').empty();
+		if($('.resultsFrame').length == 0) {
+			$('<div>').addClass('resultsFrame').appendTo('body');
 		}
-		$("<div>").html(this.description).appendTo('body');
-		this.table.appendTo('body').DataTable();
+		if(!doNotClear) {
+			$('.resultsFrame').empty();
+		}
+		$("<div>").html(this.description).appendTo('.resultsFrame');
+		this.table.appendTo('.resultsFrame').DataTable();
 	};
 	this.formatMove = function(attacker, defender, move) {
 		var td = $('<td>').text(move['name']);

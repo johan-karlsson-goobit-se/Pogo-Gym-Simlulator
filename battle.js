@@ -48,6 +48,27 @@ function Battle(attacker, defender, dod) {
 	};
 	
 	
+	this.repeatBattle = function(repeats) {
+		var realResult = { attacker : 0, defender : 0,  time : 0 };
+		var victories = 0;
+		for(var o = 0; o < repeats; o++) {
+			var result = this.fight();
+			realResult.attacker += result.attacker;
+			realResult.defender += result.defender;
+			realResult.time += result.time;
+			if(result.attacker > 0) {
+				victories++;
+			}
+
+		}
+		realResult.attacker = realResult.attacker / repeats;
+		realResult.defender = realResult.defender / repeats;
+		realResult.time = realResult.time / repeats;
+		realResult.victories = victories;
+		return realResult;
+	}
+	
+	
 	this.fight = function() {
 				//attacker, attacker_fastmove, attacker_specialmove, attacker_hp,
 				 //  defender, defender_fastmove, defender_specialmove, defender_hp) {
@@ -111,7 +132,8 @@ function Battle(attacker, defender, dod) {
 		  
 		   
 		  
-		  while ( attacker.hp > 0 && defender.hp > 0 && c_time > 0) {
+		//  while ( attacker.hp > 0 && defender.hp > 0 && c_time > 0) {
+		while ( (/* attacker.hp > 0 &&  */ defender.hp > 0) && c_time > 0) {
 			   
 				
 		    //is defender on cooldown?
@@ -124,8 +146,8 @@ function Battle(attacker, defender, dod) {
 		      
 		      // todo: use random instead, and run many simulations?
 		      
-		      //d_cooldown += d_current.cd + Math.ceil(Math.random()*1000) + 1500;
-		      d_cooldown += d_current.cd + 2000; //Math.ceil(Math.random()*1000) + 1500;
+		      d_cooldown += d_current.cd + Math.ceil(Math.random()*1000) + 1500;
+		      //d_cooldown += d_current.cd + 2000; //Math.ceil(Math.random()*1000) + 1500;
 		      
 			    
 		      if (dodge.quick && d_current.name == d_quick.name) {        
@@ -176,7 +198,7 @@ function Battle(attacker, defender, dod) {
 		    
 
 			
-		    if(! ( attacker.hp > 0 && defender.hp > 0 && c_time > 0)) {
+		    if(! ( (/* attacker.hp > 0 && */ defender.hp > 0) && c_time > 0)) {
 				       return { attacker : attacker.hp, defender : defender.hp, time : c_time };
 				       }
 		    
