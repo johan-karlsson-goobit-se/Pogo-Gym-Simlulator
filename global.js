@@ -1,6 +1,6 @@
 if(window.location.search == '') {
 $(document).ready(function() {
-$('<div style="    width: 400px;    height: 100px;    text-align: center;    position: absolute;    top:0;    bottom: 0;    left: 0;    right: 0;    margin: auto;"><h1><a href="PoGoGymSim.html?newFormula">new stats</a>  <a href="PoGoGymSim.html?oldFormula">old stats</a></h1></div>').appendTo('body');
+$('<div style="    width: 400px;    height: 300px;    text-align: center;    position: absolute;    top:0;    bottom: 0;    left: 0;    right: 0;    margin: auto;"><h1><a href="PoGoGymSim.html?newFormula">new stats</a>  <a href="PoGoGymSim.html?oldFormula">old stats</a></h1><div style="text-align: left"><strong>Important notice about performance: </strong> This tool runs simulations in your browser -- millions of them. Therefore it may take up to 15 minutes for a simulation to complete.<br><br>Do not run the heavier simulations on a cell phone or a tablet, it will be so slow that you will run out of battery before it completes.<br><br>We also recommends that you use <strong>Google Chrome</strong> to run these simulations, for this specific purpouse we have found it to be about 10 times faster than other browsers like Firefox or Internet Explorer.</div></div>').appendTo('body');
 });
 } else {
 
