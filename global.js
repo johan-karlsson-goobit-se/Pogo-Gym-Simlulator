@@ -57,6 +57,9 @@ function getBestMoveSet(name, level, dodge, tie, optimize_for, repeatBattle, wea
 				for(var m in data.pokemon[name]['fastMoves']) {
 					for(var n in data.pokemon[name]['specialMoves']) {
 						var attacker = Pokemon.newAttacker(name, data.pokemon[name]['fastMoves'][m], data.pokemon[name]['specialMoves'][n], level);
+						if( ! attacker ) {
+							continue;
+						}
 						var result = (new Battle(attacker, defender, dodge)).repeatBattle(repeatBattle);
 
 						if(result.time <= 0 || result.attacker <= 0) {
@@ -218,7 +221,9 @@ function getBestMoveSet(name, level, dodge, tie, optimize_for, repeatBattle, wea
 };
 
 function showBestAgainst(dodge, optimize_for, repeatBattle, weakAgainst) {
-	var bestMoves = {};
+	var winners = {};
+	var defenders = {};
+	var defendersExists = {};
 	
 	// for all the pokemons there is, we're going to use organize a battle
 	// these are the attackers
@@ -228,24 +233,212 @@ function showBestAgainst(dodge, optimize_for, repeatBattle, weakAgainst) {
 		if(!(data.pokemon[pokemonName]['type'][0] == weakAgainst || data.pokemon[pokemonName]['type'][1] == weakAgainst)) {
 			continue;
 		}
-		
-		// we play matches for all these cp levels
-		var cps = [25, 50, 75, 100, 150, 250, 400, 600, 800, 1000, 1250];
-		for(var cp in cps) {
-			if(!bestMoves[cps[cp]]) {
-				bestMoves[cps[cp]] = {};
+		// we find all move sets of our mon
+		var totalMovesTested = 0;
+		for(var j in data.pokemon[pokemonName]['fastMoves']) {
+			for(var k in data.pokemon[pokemonName]['specialMoves']) {
+				var quickMove = data.pokemon[pokemonName]['fastMoves'][j];
+				var cinematicMove = data.pokemon[pokemonName]['specialMoves'][k];
+				var moveKey = data.pokemon[pokemonName]['fastMoves'][j] + '-' + data.pokemon[pokemonName]['specialMoves'][k];
+				var monKey = pokemonName + '-' + moveKey;
+				if(data.pokemon[pokemonName]['newMoves'].indexOf(moveKey) != -1) {
+					// all is fine
+				} else if(data.pokemon[pokemonName]['legacyMoves'].indexOf(moveKey) != -1) {
+					// legacy move
+				} else {
+					// this mon cant exist!
+					continue;
+				}
+				
+				totalMovesTested++;
+				
+				// we play matches for all these cp levels
+				var cps = [400, 500, 600, 700, 800, 900, 1000, 1150, 1300, 1500];
+				for(var cp in cps) {
+					if(!winners[cps[cp]]) {
+						winners[cps[cp]] = {};
+					}
+					if(!winners[cps[cp]][monKey]) {
+						winners[cps[cp]][monKey] = [];
+					}
+
+					var attacker = Pokemon.newAttackerWithMaxCP(pokemonName, quickMove, cinematicMove, cps[cp]);
+					if(attacker.level > 30) {
+						continue;
+					}
+					var totalNumberOfMoves = data.pokemon[pokemonName]['newMoves'].length + data.pokemon[pokemonName]['legacyMoves'].length;					
+					$('title').text('Mon: ' + data.pokemon[pokemonName]['number'] + ' (' + data.pokemon[pokemonName]['name'] + ') Move: ' + totalMovesTested + '/' + totalNumberOfMoves + ' Step: ' + cps[cp] + ' cp');
+					
+					// lets go through all defenders
+					for(var def_i in data.pokemon) {
+						var shouldbreak = false;
+						for(var def_j in data.pokemon[def_i]['fastMoves']) {
+							if(shouldbreak) {
+								break;
+							}
+							for(var def_k in data.pokemon[def_i]['specialMoves']) {
+								var defenderCP = cps[cp] * 2;
+								var defender = null;
+								if( defendersExists[ data.pokemon[def_i]['name'] + data.pokemon[def_i]['fastMoves'][def_j] + data.pokemon[def_i]['specialMoves'][def_k] + defenderCP ] ) {
+									defender = defenders[ data.pokemon[def_i]['name'] + data.pokemon[def_i]['fastMoves'][def_j] + data.pokemon[def_i]['specialMoves'][def_k] + defenderCP ];
+								} else {
+									defender = Pokemon.newDefenderWithMinCP(data.pokemon[def_i]['name'], data.pokemon[def_i]['fastMoves'][def_j], data.pokemon[def_i]['specialMoves'][def_k], defenderCP);
+									defenders[ data.pokemon[def_i]['name'] + data.pokemon[def_i]['fastMoves'][def_j] + data.pokemon[def_i]['specialMoves'][def_k] + defenderCP ] = defender;
+									defendersExists[ data.pokemon[def_i]['name'] + data.pokemon[def_i]['fastMoves'][def_j] + data.pokemon[def_i]['specialMoves'][def_k] + defenderCP ] = true;
+								}
+								if(!defender) {
+									continue;
+								}
+						
+								if ( weakAgainst != 'Any' &&  ! (data.effective[ weakAgainst ][ defender.type[0] ] * data.effective[ weakAgainst ][ defender.type[1] ] > 1.1 )) {
+									shouldbreak = true;
+									break;
+								}
+						
+								var result = (new Battle(attacker, defender, dodge)).repeatBattle(repeatBattle);
+								if(result.time <= 0 || result.attacker <= 0 || result.victories <= repeatBattle * 0.99) {
+									continue;
+								}
+								
+								// we store a copy of the result and the defender in the attacker
+								attacker['result'] = result;
+								attacker['defender'] = defender;
+								winners[cps[cp]][monKey].push(attacker);
+							}
+						}
+					}
+				}
 			}
-			bestMoves[cps[cp]][pokemonName] = {};
-			bestMoves[cps[cp]][pokemonName] = {};
-			
-			var attacker = Pokemon.newAttackerWithMaxCP(data.pokemon[pokemonName]['name'], data.pokemon[pokemonName]['fastMoves'][0], data.pokemon[pokemonName]['specialMoves'][0], cps[cp]);
-			if(attacker.level > 30) {
+		}
+	}
+	
+	console.log('winners');
+	console.log(winners);
+	var results = {};
+	
+	for(var cp in winners) {
+		results[cp] = [];
+		for(var monKey in winners[cp]) {
+			var listOfWinsForMon = winners[cp][monKey];
+			var victories = listOfWinsForMon.length;
+			if(victories == 0) {
 				continue;
 			}
+			if(!results[cp][victories]) {
+				results[cp][victories] = [];
+			}
+			results[cp][victories].push(listOfWinsForMon);
+		}
+		results[cp] = results[cp].reverse();
+	}
+	console.log('results');
+	console.log(results);
+	
+	var results1 = {};
+	for(var cp in results) {
+		results1[cp] = [];
+		for(var numberOfVictories in results[cp]) {
+			var ties = results[cp][numberOfVictories];
+
+			var tieBreaker = [];
+			for(var i in results[cp][numberOfVictories]) {
+				var avgHP = 0;
+				for(var j in results[cp][numberOfVictories][i]) {
+					avgHP += results[cp][numberOfVictories][i][j].result['attacker'];
+				}
+				avgHP = Math.round(100 *  (results[cp][numberOfVictories][i][j]['HP'] - (avgHP / results[cp][numberOfVictories][i].length))) / 100;
+				var avgHPPercentage = Math.round(100 * avgHP / results[cp][numberOfVictories][i][j]['HP']);
+				
+				if(! tieBreaker[avgHPPercentage]) {
+					tieBreaker[avgHPPercentage] = [];
+				}
+				tieBreaker[avgHPPercentage].push(results[cp][numberOfVictories][i]);
+			}
+			for(var i in tieBreaker) {
+				for(var j in tieBreaker[i]) {
+					results1[cp].push(tieBreaker[i][j]);
+				}
+			}
+		}
+	}
+	console.log('results1');
+	console.log(results1);
+
+	var resultsView = new ResultsView();
+	var description = "Best attacker of type " + weakAgainst + " against attackers weak against " + weakAgainst;
+	resultsView.addDescription(description, null);
+
+	var header = [];
+	header.push("#");
+	for(var cp in results1) {
+		header.push(cp);
+	}
+	resultsView.addHeader(header);
+
+	var i = 0;
+	var rows = [];
+	foundMon = true;
+	while(foundMon) {
+		rows[i] = [];
+		rows[i].push(i+1);
+		foundMon = false;
+		for(var cp in results1) {
+			var mon = results1[cp].shift();
+			if(typeof mon == 'undefined') {
+				rows[i].push("&nbsp;");
+				continue;
+			}
+			foundMon = true;
 			
-			// this function will let our attacker meet all the defenders weak to optimize_for
-			// and will also test all move sets
-			var bestMoveSet = getBestMoveSet(attacker.name, attacker.level, dodge, 100, optimize_for, repeatBattle, weakAgainst, cps[cp] * 2);
+			var infodiv = $('<div>').addClass('infodiv');
+			$('<strong>').text(mon[0]['name']).appendTo(infodiv);
+			
+			var avgHP = 0;
+			var avgTime = 0;
+			for(var j in mon) {
+				avgHP += mon[j].result['attacker'];
+				avgTime += mon[j].result['time'];
+			}
+			avgHP = Math.round(100 *  (mon[j]['HP'] - (avgHP / mon.length))) / 100;
+			avgTime = Math.round((100000 - avgTime / mon.length) / 10) / 100;
+			var avgHPPercentage = Math.round(100 * avgHP / mon[j]['HP']) + '%';
+			
+			
+			$('<div>').addClass('smallFont').html(
+				'Legacy: ' + ( mon[0]['legacy'] == '' ? 'No' : 'Yes' ) + '<br>' + 
+				'Quick mv: ' + mon[0]['selectedFast']['name'] + '<br>' + 
+				'Charge mv: ' + mon[0]['selectedSpecial']['name'] + '<br>' +
+				'Battles won: ' + mon.length + '<br>' +
+				'Avg remaning time: ' + avgTime + '<br>' +
+				'Avg used HP %: ' + avgHPPercentage + '<br>' +
+				'Avg used HP: ' + avgHP
+			).appendTo(infodiv);
+			rows[i].push( $('<div>').append(infodiv).html() );
+		}
+		//rows[i].pop();
+		i++;
+	}
+
+	var resultsStore = {};
+	resultsStore['header'] = header;
+	resultsStore['rows'] = [];
+	resultsStore['title'] = weakAgainst;
+	resultsStore['description'] = description;
+	
+	for(var i in rows) {
+		resultsView.addRow(rows[i]);
+		resultsStore['rows'].push(rows[i]);
+	}
+	var localstoragename = 'showBestAgainst' + window.location.search + JSON.stringify(dodge) + optimize_for + repeatBattle + weakAgainst;
+	localStorage.setItem(localstoragename, JSON.stringify(resultsStore));
+	
+	$('title').text(weakAgainst);
+	resultsView.outputResults();
+
+
+	return;
+	/*
+
 			var maxVictories = 0;
 			
 			// we figure out the most effective move set, and store that data
@@ -484,6 +677,7 @@ function showBestAgainst(dodge, optimize_for, repeatBattle, weakAgainst) {
 			mon['quick'] = bestMoves[cp][name]['quick'];
 			mon['charge'] = bestMoves[cp][name]['charge'];
 			mon['victories'] = bestMoves[cp][name]['victories'];
+			mon['legacy'] = bestMoves[cp][name]['legacy'] == '' ? "No" : "Yes";
 			
 			mon['avgRemaningTime']  = bestMoves[cp][name]['avgRemaningTime'];
 			mon['avgUsedHP']  = bestMoves[cp][name]['avgUsedHP'] ;
@@ -503,7 +697,8 @@ function showBestAgainst(dodge, optimize_for, repeatBattle, weakAgainst) {
 	
 	
 	var resultsView = new ResultsView();
-	resultsView.addDescription("Best attacker of type " + weakAgainst + " against attackers weak against " + weakAgainst, null);
+	var description = "Best attacker of type " + weakAgainst + " against attackers weak against " + weakAgainst;
+	resultsView.addDescription(description, null);
 	
 	var header = [];
 	header.push("#");
@@ -524,6 +719,7 @@ function showBestAgainst(dodge, optimize_for, repeatBattle, weakAgainst) {
 				var infodiv = $('<div>').addClass('infodiv');
 				$('<strong>').text(winnersPerCP[cp][i]['name']).appendTo(infodiv);
 				$('<div>').addClass('smallFont').html(
+					'Legacy: ' + winnersPerCP[cp][i]['legacy'] + '<br>' + 
 					'Quick mv: ' + winnersPerCP[cp][i]['quick'] + '<br>' + 
 					'Charge mv: ' + winnersPerCP[cp][i]['charge'] + '<br>' +
 					'Battles won: ' + winnersPerCP[cp][i]['victories'] + '<br>' +
@@ -531,7 +727,7 @@ function showBestAgainst(dodge, optimize_for, repeatBattle, weakAgainst) {
 					'Avg used HP %: ' + winnersPerCP[cp][i]['avgUsedHPPercentage'] + '<br>' +
 					'Avg used HP: ' + winnersPerCP[cp][i]['avgUsedHP']
 				).appendTo(infodiv);
-				rows[i].push( infodiv );
+				rows[i].push( $('<div>').append(infodiv).html() );
 			} else {
 				rows[i].push("&nbsp;");
 			}
@@ -540,14 +736,24 @@ function showBestAgainst(dodge, optimize_for, repeatBattle, weakAgainst) {
 	
 	resultsView.addHeader(header);
 
+	var results = {};
+	results['header'] = header;
+	results['rows'] = [];
+	results['title'] = weakAgainst;
+	results['description'] = description;
+	
 	for(var i in rows) {
 		resultsView.addRow(rows[i]);
+		results['rows'].push(rows[i]);
 	}
+	var localstoragename = 'showBestAgainst' + window.location.search + JSON.stringify(dodge) + optimize_for + repeatBattle + weakAgainst;
+	localStorage.setItem(localstoragename, JSON.stringify(results));
 	
 	$('title').text(weakAgainst);
 	resultsView.outputResults();
 	
 	//console.log(wonOver);
+	*/
 	/*
 	var attacker1 = Pokemon.newAttackerWithMaxCP(name1, quickmove1, chargemove1, maxCP);
 	var attacker2 = Pokemon.newAttackerWithMaxCP(name2, quickmove2, chargemove2, maxCP);
@@ -660,7 +866,7 @@ function showBestMoveSet(name, level, dodge, tie, optimize_for, repeatBattle, we
 				var defender = attacker['defender'];
 				resultsView.addRow([
 					defender['number'],
-					defender['name'],
+					defender['name'] + defender['legacy'],
 					resultsView.formatMove(defender, attacker, defender['selectedFast']),
 					resultsView.formatMove(defender, attacker, defender['selectedSpecial']),
 					resultsView.formatMove(attacker, attacker['defender'], attacker['selectedFast']),
@@ -682,6 +888,7 @@ function showBestMoveSet(name, level, dodge, tie, optimize_for, repeatBattle, we
 };
 
 // this is crazy and didnt really turn out well....
+/*
 function showBestPokemon(cp, dodge, tie, optimize_for, repeatBattle, weakAgainst) {
 	var results = {};
 	
@@ -884,7 +1091,7 @@ function showBestPokemon(cp, dodge, tie, optimize_for, repeatBattle, weakAgainst
 					defender = attacker['defender'];
 					resultsView.addRow([
 						defender['number'],
-						defender['name'],
+						defender['name']  + defender['legacy'],
 						resultsView.formatMove(defender, attacker, defender['selectedFast']),
 						resultsView.formatMove(defender, attacker, defender['selectedSpecial']),
 						attacker['name'],
@@ -906,7 +1113,7 @@ function showBestPokemon(cp, dodge, tie, optimize_for, repeatBattle, weakAgainst
 		}
 	}
 };
-
+*/
 
 function showPairTwoPokemons(name1, quickmove1, chargemove1, name2, quickmove2, chargemove2, maxCP, dodge, optimize_for, repeats, weakAgainst) {
 	var attacker1 = Pokemon.newAttackerWithMaxCP(name1, quickmove1, chargemove1, maxCP);
@@ -985,7 +1192,7 @@ function showPairTwoPokemons(name1, quickmove1, chargemove1, name2, quickmove2, 
 				if(attacker1isTheWinner) {
 					resultsView1.addRow([
 						defender['number'],
-						defender['name'],
+						defender['name'] + defender['legacy'],
 						resultsView1.formatMove(defender, attacker1, defender['selectedFast']),
 						resultsView1.formatMove(defender, attacker1, defender['selectedSpecial']),
 						defender['level'],
@@ -1002,7 +1209,7 @@ function showPairTwoPokemons(name1, quickmove1, chargemove1, name2, quickmove2, 
 				} else {
 					resultsView2.addRow([
 						defender['number'],
-						defender['name'],
+						defender['name'] + defender['legacy'],
 						resultsView1.formatMove(defender, attacker2, defender['selectedFast']),
 						resultsView1.formatMove(defender, attacker2, defender['selectedSpecial']),
 						defender['level'],
@@ -1026,6 +1233,10 @@ function showPairTwoPokemons(name1, quickmove1, chargemove1, name2, quickmove2, 
 
 
 function showMostEffectiveAttackers(defender, dodge, repeats) {
+	if(!defender) {
+		alert('Selected defender cannot exist!');
+		return;
+	}
 	var resultsView = new ResultsView();
 	resultsView.addDescription("Most effective attackers (with less than half the CP)", defender);
 	resultsView.addHeader(['#', 'Name', 'Quick Attack', 'Special Attack', 'Level', 'CP', 'HP', 'Used<br>HP', 'Remaining<br>HP %', 'Time<br>Needed', 'Victories']);
@@ -1034,6 +1245,9 @@ function showMostEffectiveAttackers(defender, dodge, repeats) {
 		for(var j in data.pokemon[i]['fastMoves']) {
 			for(var k in data.pokemon[i]['specialMoves']) {
 				var attacker = Pokemon.newAttackerWithMaxCP(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], defender['CP'] / 2);
+				if( ! attacker ) {
+					continue;
+				}
 				//var result = (new Battle(attacker, defender, dodge)).fight();
 				var result = (new Battle(attacker, defender, dodge)).repeatBattle(repeats);
 
@@ -1043,13 +1257,13 @@ function showMostEffectiveAttackers(defender, dodge, repeats) {
 				
 				resultsView.addRow([
 					attacker['number'],
-					attacker['name'],
+					attacker['name'] + attacker['legacy'],
 					resultsView.formatMove(attacker, defender, attacker['selectedFast']),
 					resultsView.formatMove(attacker, defender, attacker['selectedSpecial']),
 					attacker['level'],
 					attacker['CP'],
 					attacker['HP'],
-					attacker['HP'] - result['attacker'],
+					Math.round(100 * (attacker['HP'] - result['attacker'])) / 100,
 					Math.round( 100 * result['attacker'] / attacker['HP']),
 					Math.round(99 - result['time'] / 1000),
 					result['victories'],
@@ -1081,13 +1295,13 @@ function showLeastEffectiveDefender(attacker, dodge, repeats) {
 
 				resultsView.addRow([
 					defender['number'],
-					defender['name'],
+					defender['name'] + defender['legacy'],
 					resultsView.formatMove(defender, attacker, defender['selectedFast']),
 					resultsView.formatMove(defender, attacker, defender['selectedSpecial']),
 					defender['level'],
 					defender['CP'],
 					defender['HP'],
-					attacker['HP'] - result['attacker'],
+					Math.round( 100 * (attacker['HP'] - result['attacker'])) / 100,
 					Math.round( 100 * result['attacker'] / attacker['HP']),
 					Math.round(99 - result['time'] / 1000),
 					result['victories'],

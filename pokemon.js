@@ -6,6 +6,9 @@ function Pokemon(name) {
 
 Pokemon.newDefender = function(name, fastMove, specialMove, level) {
 	var me = Pokemon.newAttacker(name, fastMove, specialMove, level);
+	if( !me ) {
+		return null;
+	}
 	me['fightHP'] = Math.max(me['HP'] * 2, 20);
 	me['selectedSpecial']['cooldown'] = me['selectedSpecial']['cooldown'] + 2000;
 	me['selectedFast']['cooldown'] = me['selectedFast']['cooldown'] + 2000;
@@ -16,6 +19,9 @@ Pokemon.newAttackerWithMaxCP = function(name, fastMove, specialMove, maxCP) {
 	var level = 40;
 	do {
 		var attacker = Pokemon.newAttacker(name,  fastMove, specialMove, level);
+		if( !attacker ) {
+			return null;
+		}
 		level = level - 0.5;
 		level = parseFloat(parseFloat(level).toFixed(1));
 	} while(maxCP < attacker['CP']  && attacker['level'] > 1);
@@ -26,6 +32,9 @@ Pokemon.newDefenderWithMinCP = function(name, fastMove, specialMove, minCP) {
 	var level = 1;
 	do {
 		var defender = Pokemon.newDefender(name,  fastMove, specialMove, level);
+		if( !defender ) {
+			return null;
+		}
 		level = level + 0.5;
 		level = parseFloat(parseFloat(level).toFixed(1));
 		if(level > 40) {
@@ -38,6 +47,18 @@ Pokemon.newDefenderWithMinCP = function(name, fastMove, specialMove, minCP) {
 
 Pokemon.newAttacker = function(name, fastMove, specialMove, level) {
 	var me = new Pokemon(name);
+	
+	var moveKey = fastMove + '-' + specialMove;
+	if(me['newMoves'].indexOf(moveKey) != -1) {
+		// all is fine
+		me['legacy'] = '';
+	} else if(me['legacyMoves'].indexOf(moveKey) != -1) {
+		// legacy move
+		me['legacy'] = ' <span style="font-size: 7px;">Legacy<span>';
+	} else {
+		// this mon cant exist!
+		return null;
+	}
 
 	me['selectedFast'] = [];
 	me['selectedFast']['name'] = fastMove;

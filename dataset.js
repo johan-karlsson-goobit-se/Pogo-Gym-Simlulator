@@ -221,7 +221,7 @@ function Dataset() {
 		}
 		CPMSorted[CPM[i][0]] = CPM[i][1];
 	}
-
+console.log(CPMSorted);
 	var MovesSorted = {};
 	for(var i in Moves) {
 		var row = {};
@@ -238,10 +238,127 @@ function Dataset() {
 		MovesSorted[ row['name'] ] = row;
 	}
 	
-	//var r = {};
 	this.moves = MovesSorted;
 	this.effective = EffectiveSorted;
 	this.pokemon = PokemonSorted;
 	this.cpm = CPMSorted;
-//	return r;
+
+	console.log(JSON.stringify(this.pokemon));
+
+	var pokemons = {};		
+	var j = 0;
+	function CamelCase(myStr) { return myStr.toLowerCase().replace(/\b\w/g, function(l){ return l.toUpperCase() }); };
+	function fixType(myStr) {return CamelCase(myStr.replace('POKEMON_TYPE_', '').replace('_', ' ')); };
+	function fixMove(myStr) { return CamelCase(myStr.replace('_FAST', '').replace('_', ' '));	};
+	
+	for(var i in GAME_MASTER['itemTemplates']) {
+		var item = GAME_MASTER['itemTemplates'][i];
+		if(typeof item['pokemonSettings'] != 'undefined') {
+			j++;
+			var mon = {};
+			mon['name'] = CamelCase(item['pokemonSettings']['pokemonId']);
+			mon['number'] = j;
+			mon['baseSta']	= item['pokemonSettings']['stats']['baseStamina'];
+			mon['baseAtk']	= item['pokemonSettings']['stats']['baseAttack'];
+			mon['baseDef']	= item['pokemonSettings']['stats']['baseDefense'];
+			mon['type'] = [];
+			mon['type'].push(fixType(item['pokemonSettings']['type']));
+			if( typeof item['pokemonSettings']['type2'] != 'undefined') {
+				mon['type'].push(fixType(item['pokemonSettings']['type2']));
+			} else {
+				mon['type'].push('None');
+			}
+			mon['fastMoves'] = [];
+			for(var move in item['pokemonSettings']['quickMoves']) {
+				mon['fastMoves'].push(fixMove(item['pokemonSettings']['quickMoves'][move]));
+			}
+			mon['specialMoves'] = [];
+			for(var move in item['pokemonSettings']['cinematicMoves']) {
+				mon['specialMoves'].push(fixMove(item['pokemonSettings']['cinematicMoves'][move]));
+			}
+			
+			mon['newMoves'] = [];
+			for(var qm in mon['fastMoves']) {
+				for(var cm in mon['specialMoves']) {
+					mon['newMoves'].push(mon['fastMoves'][qm] + '-' + mon['specialMoves'][cm]);
+				}
+			}
+			
+			if(/* mon['number'] <= 149 && */ mon['number'] != 144 && mon['number'] != 145 && mon['number'] != 146 && mon['number'] != 132) {
+				pokemons[ mon['name'] ] = mon;
+			}
+		}
+	}
+
+	for(var i in GAME_MASTER_old['itemTemplates']) {
+		var item = GAME_MASTER_old['itemTemplates'][i];
+		if(typeof item['pokemonSettings'] != 'undefined') {
+
+			if(typeof pokemons[ CamelCase(item['pokemonSettings']['pokemonId']) ] == 'undefined') {
+				continue;
+			}
+			
+			var mon = pokemons[ CamelCase(item['pokemonSettings']['pokemonId']) ];
+			
+			if( mon['number'] <= 149 && mon['number'] != 144 && mon['number'] != 145 && mon['number'] != 146 && mon['number'] != 132) {
+				// all is fine, this is a gen 1 mon
+			} else {
+				mon['legacyMoves'] = [];
+				pokemons[ mon['name'] ] = mon;
+				continue;
+			}
+			
+			for(var move in item['pokemonSettings']['quickMoves']) {
+				var qm = fixMove(item['pokemonSettings']['quickMoves'][move]);
+				if(mon['fastMoves'].indexOf(qm) == -1) {
+					mon['fastMoves'].push(qm);
+				}
+			}
+
+			for(var move in item['pokemonSettings']['cinematicMoves']) {
+				var cm = fixMove(item['pokemonSettings']['cinematicMoves'][move]);
+				if(mon['specialMoves'].indexOf(cm) == -1) {
+					mon['specialMoves'].push(cm);
+				}
+			}
+			
+			mon['legacyMoves'] = [];
+			for(var qm in item['pokemonSettings']['quickMoves']) {
+				qm = fixMove(item['pokemonSettings']['quickMoves'][qm]);
+				for(var cm in item['pokemonSettings']['cinematicMoves']) {
+					cm = fixMove(item['pokemonSettings']['cinematicMoves'][cm]);
+					var move = qm + '-' + cm;
+					if(mon['newMoves'].indexOf(move) == -1) {
+						mon['legacyMoves'].push(move);
+					}
+				}
+			}
+			pokemons[ mon['name'] ] = mon;
+		}
+	}
+	
+	this.pokemon = pokemons;
+	var moves = {};
+	
+	
+	for(var i in GAME_MASTER['itemTemplates']) {
+		var item = GAME_MASTER['itemTemplates'][i];
+		if(typeof item['moveSettings'] != 'undefined') {
+//			console.log(item['moveSettings']);
+			var move_GM = item['moveSettings'];
+			var move = {};
+			move['duration'] = move_GM['durationMs'];
+			move['energy'] = move_GM['energyDelta'];
+			move['name'] = fixMove(move_GM['movementId']);
+			if(typeof move_GM['power'] != 'undefined' ) {
+				move['power'] = move_GM['power'];
+			} else {
+				move['power'] = 0;
+			}
+			move['type'] = fixType(move_GM['pokemonType']);
+			moves[move['name']] = move;
+		}
+	}
+	this.moves = moves;
+//	console.log(this.moves);
 }
