@@ -8,13 +8,16 @@ $('<div style="    width: 400px;    height: 300px;    text-align: center;    pos
 
 data = new Dataset();
 $(document).ready(function() {
-	(new Form()).mostEffective('defender').appendTo('body');
-	(new Form()).mostEffective('attacker').appendTo('body');
-	(new Form()).bestMoveset().appendTo('body');
+//	(new Form()).mostEffective('defender').appendTo('body');
+//	(new Form()).mostEffective('attacker').appendTo('body');
+//	(new Form()).bestMoveset().appendTo('body');
 //	(new Form()).bestPokemon().appendTo('body');
-	(new Form()).pairPokemon().appendTo('body');
-	(new Form()).bestAgainst().appendTo('body');
+//	(new Form()).pairPokemon().appendTo('body');
+//	(new Form()).bestAgainst().appendTo('body');
 	
+	(new Form()).showMaxEffectiveLevel().appendTo('body');
+	
+	/*
 	$('<div style="color: blue; clear: both;">[info]</a>').appendTo('body').on('click', function() {
 		$(".infoBox").slideToggle();
 	});
@@ -26,6 +29,7 @@ $(document).ready(function() {
 	$("<p>There are forms of randomness built into this tool, so the results may differ for different times you run the simulations. You have the option to run multiple simulations of each battle and average the results. If you get results that are unbelivable, its most likely because they are. Try to re-run the simulation and see if the new result differs.</p>").appendTo(infoBox)
 	$("<p style='clear: both;'><strong>Tie cut of: </strong> If the result of a battle is within this percentage of the most commonly 'best' move set, ignore the winning battle and pretend that the move set that have won the most battles was most effective against this defender as well. This is useful if you want a list of move sets that is <i>good enough</i> instead of perfect.</p>").appendTo(infoBox);
 	$("<p style='clear: both;'><strong>Optimize for: </strong> Decides what to optimze for. Usually 'battles won' gives the most reasonable results, but the other options may be interesting if you want to find out if your mons are good in some special way.</p>").appendTo(infoBox);
+	*/
 });
 
 function getBestMoveSet(name, level, dodge, tie, optimize_for, repeatBattle, weakAgainst, forcedDefenderMinCP) {
@@ -1307,6 +1311,53 @@ function showLeastEffectiveDefender(attacker, dodge, repeats) {
 					result['victories'],
 				]);
 			}
+		}
+	}
+	resultsView.outputResults();
+};
+
+function showMaxEffectiveLevel(attacker) {
+	var resultsView = new ResultsView();
+	resultsView.addDescription("Level you need to power up your Pokemon to to max out the quick move against Tyranitar", attacker);
+	resultsView.addHeader(['Name', 'Level', 'Quick Attack', 'DMG Quick', 'Energy Quick', 'DPS Quick', 'EPS Quick']);
+
+	for(var i in data.pokemon) {
+		if(data.pokemon[i].name != 'Tyranitar') {
+			continue;
+		}
+
+		var j = 0;
+		var k = 0;
+		
+		var lastQuickDamage = 0;
+		for(var level = 1; level <= 39; level += 0.5) {
+			var newAttacker = Pokemon.newAttacker(attacker['name'], attacker['selectedFast']['name'], attacker['selectedSpecial']['name'], level);
+			var defender = Pokemon.newDefender(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], 40);
+			if(!defender) {
+				continue;
+			}
+			
+			console.log(newAttacker);
+			var battle = new Battle(newAttacker, defender, 'none');
+
+			if(lastQuickDamage == battle.attacker.selectedFast.damage) {
+				continue;
+			}
+			lastQuickDamage = battle.attacker.selectedFast.damage;
+			
+
+			resultsView.addRow(
+				[
+					battle.attacker.name,
+					battle.attacker.level,
+					battle.attacker.selectedFast.name,
+					battle.attacker.selectedFast.damage,
+					battle.attacker.selectedFast.energy,
+					battle.attacker.selectedFast.damage / battle.attacker.selectedFast.cooldown * 1000,
+					battle.attacker.selectedFast.energy / battle.attacker.selectedFast.cooldown * 1000
+				]
+			);
+
 		}
 	}
 	resultsView.outputResults();

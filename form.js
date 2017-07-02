@@ -222,6 +222,23 @@ function Form() {
 		});
 		$('<br>').appendTo(form);
 	};
+
+	this.showMaxEffectiveLevel = function() {
+		var pokemonController = addPokemonController();
+//		addLevelController();
+		var qm = addQuickMoveController(pokemonController);
+		addChargeMoveController(pokemonController, qm);
+//		addDodgeController();
+//		addRepeatBattleController();
+		addGoButton(function(form, config) {
+			var level = 1;
+			var defender = Pokemon.newDefender(getPokemon(), getQuickMove(), getChargeMove(), level);
+			showMaxEffectiveLevel(defender);
+		});
+
+		var text = 'The most useful level to power up to';
+		return $("<div>").text(text).addClass("settingsBox").append(form);
+	};
 	
 	this.mostEffective = function(forWhat) {
 		var pokemonController = addPokemonController();

@@ -2,7 +2,8 @@ function Battle(attacker, defender, dod) {
 	var dodge = dod;
 	var attacker_o = calculatePower(attacker, defender, null); // the _defender_ can never dodge
 	var defender_o = calculatePower(defender, attacker_o, dodge); //the _attacker_ is dodging, so the damage from the defender is less
-	
+	this.attacker = attacker_o;
+	this.defender = defender_o;
 	
 	
 	
@@ -12,10 +13,10 @@ function Battle(attacker, defender, dod) {
 
 		attacker['selectedFast']['damage'] = 0.5 * attacker['attack'] / defenderDefense * attacker['selectedFast']['power'];
 		if(attacker['selectedFast']['type'] == attacker['type'][0]) { // stab 1
-			attacker['selectedFast']['damage'] *= 1.25;
+			attacker['selectedFast']['damage'] *= 1.2;
 		}
 		if(attacker['selectedFast']['type'] == attacker['type'][1]) { // stab 2
-			attacker['selectedFast']['damage'] *= 1.25;
+			attacker['selectedFast']['damage'] *= 1.2;
 		}
 		attacker['selectedFast']['damage'] *= data.effective[ attacker['selectedFast']['type'] ][ defenderTypes[0] ]; // effective 1
 		attacker['selectedFast']['damage'] *= data.effective[ attacker['selectedFast']['type'] ][ defenderTypes[1] ]; // effective 2
@@ -23,10 +24,10 @@ function Battle(attacker, defender, dod) {
 
 		attacker['selectedSpecial']['damage'] = 0.5 * attacker['attack'] / defenderDefense * attacker['selectedSpecial']['power'];
 		if(attacker['selectedSpecial']['type'] == attacker['type'][0]) { // stab 1
-			attacker['selectedSpecial']['damage'] *= 1.25;
+			attacker['selectedSpecial']['damage'] *= 1.2;
 		}
 		if(attacker['selectedSpecial']['type'] == attacker['type'][1]) { // stab 2
-			attacker['selectedSpecial']['damage'] *= 1.25;
+			attacker['selectedSpecial']['damage'] *= 1.2;
 		}
 		attacker['selectedSpecial']['damage'] *= data.effective[ attacker['selectedSpecial']['type'] ][ defenderTypes[0] ]; // effective 1
 		attacker['selectedSpecial']['damage'] *= data.effective[ attacker['selectedSpecial']['type'] ][ defenderTypes[1] ]; // effective 2
