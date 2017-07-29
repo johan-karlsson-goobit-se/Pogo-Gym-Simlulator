@@ -45,7 +45,7 @@ Pokemon.newDefenderWithMinCP = function(name, fastMove, specialMove, minCP) {
 	return defender;
 }
 
-Pokemon.newAttacker = function(name, fastMove, specialMove, level) {
+Pokemon.newAttacker = function(name, fastMove, specialMove, level, attackIV) {
 	var me = new Pokemon(name);
 	
 	var moveKey = fastMove + '-' + specialMove;
@@ -66,7 +66,7 @@ Pokemon.newAttacker = function(name, fastMove, specialMove, level) {
 	me['selectedSpecial']['name'] = specialMove;
 	
 	me['level'] = level;
-	me['attackIV'] = 15;
+	me['attackIV'] = parseInt(attackIV);
 	me['defenseIV'] = 15;
 	me['staminaIV'] = 15;
 

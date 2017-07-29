@@ -3,7 +3,7 @@ function Form() {
 	var that = this;
 	
 	function addPokemonController() {
-		$("<strong>Pokemon: </strong>").appendTo(form);
+		$("<strong>Attacker: </strong>").appendTo(form);
 		var select = $("<select>").appendTo(form);
 		for(var i in data.pokemon) {
 			$("<option value='"+i+"'>"+i+"</option>").appendTo(select);
@@ -12,6 +12,45 @@ function Form() {
 		that.pokemonController = select;
 		
 		return select;
+	};
+	
+	function addRaidDefenderController() {
+		$("<strong>Defender: </strong>").appendTo(form);
+		var select = $("<select>").appendTo(form);
+		var raidDefenderList = ['Magikarp', 'Croconaw', 'Bayleef', 'Quilava', 'Electabuzz', 'Exeggutor', 'Magmar', 'Muk', 'Weezing', 'Vaporeon', 'Arcanine', 'Machamp', 'Jolteon', 'Gengar', 'Flareon', 'Alakazam', 'Lapras', 'Blastoise', 'Venusaur', 'Charizard', 'Snorlax', 'Rhydon', 'Tyranitar', 'Lugia', 'Articuno', 'Zapdos', 'Moltres'];
+		for(var i in raidDefenderList) {
+			$("<option value='"+raidDefenderList[i]+"'>Raid "+raidDefenderList[i]+"</option>").appendTo(select);
+		}
+		$('<br>').appendTo(form);
+		that.raidDefenderController = select;
+		
+		return select;
+	};
+
+	function getRaidDefender(me) {
+		if(me) {
+			return me.val();
+		}
+		return that.raidDefenderController.val();
+	};
+
+	function addAttackIVController() {
+		$("<strong>Attack IV: </strong>").appendTo(form);
+		var select = $("<select>").appendTo(form);
+		for(i = 0; i <= 15; i++) {
+			$("<option value='"+i+"'>"+i+"</option>").appendTo(select);
+		}
+		$('<br>').appendTo(form);
+		that.attackIVController = select;
+		
+		return select;
+	};
+
+	function getAttackIV(me) {
+		if(me) {
+			return me.val();
+		}
+		return that.attackIVController.val();
 	};
 	
 	function getPokemon(me) {
@@ -144,6 +183,20 @@ function Form() {
 		return {'quick' : dodgeQuick, 'charge' : dodgeCharge};
 	};
 	
+	
+	function addShowAllController() {
+		$("<strong>Show all levels: </strong>").appendTo(form);
+		var showAll = $("<select><option value='no'>No</option><option value='yes'>Yes</option></select>").appendTo(form);
+		$('<br>').appendTo(form);
+		
+		that.showAllController = showAll;
+	};
+	
+	function getShowAll() {
+		var showAll = that.showAllController.val();
+		return showAll;
+	};
+	
 	function addTieController() {
 		$("<strong>Tie cut of: </strong>").appendTo(form);
 		var select = $("<select>").appendTo(form);
@@ -224,16 +277,19 @@ function Form() {
 	};
 
 	this.showMaxEffectiveLevel = function() {
+		var raidDefenderController = addRaidDefenderController();
 		var pokemonController = addPokemonController();
+		var attackIVController = addAttackIVController();
 //		addLevelController();
 		var qm = addQuickMoveController(pokemonController);
 		addChargeMoveController(pokemonController, qm);
 //		addDodgeController();
 //		addRepeatBattleController();
+		addShowAllController();
 		addGoButton(function(form, config) {
 			var level = 1;
 			var defender = Pokemon.newDefender(getPokemon(), getQuickMove(), getChargeMove(), level);
-			showMaxEffectiveLevel(defender);
+			showMaxEffectiveLevel(defender, getRaidDefender(), getAttackIV(), getShowAll());
 		});
 
 		var text = 'The most useful level to power up to';

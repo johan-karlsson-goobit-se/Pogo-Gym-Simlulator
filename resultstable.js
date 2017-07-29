@@ -17,10 +17,13 @@ function ResultsView() {
 			$('<th>').html(cols[i]).appendTo(tr);
 		}
 	};
-	this.addRow = function(cols) {
+	this.addRow = function(cols, showBold) {
 		var tr = $('<tr>').appendTo(this.table);
 		for(var i in cols) {
 			$('<td>').html(cols[i]).appendTo(tr);
+		}
+		if(showBold) {
+			tr.css("font-weight","Bold");
 		}
 	};
 	this.outputResults = function(doNotClear) {
@@ -31,7 +34,11 @@ function ResultsView() {
 			$('.resultsFrame').empty();
 		}
 		$("<div>").html(this.description).appendTo('.resultsFrame');
-		this.table.appendTo('.resultsFrame').DataTable();
+		this.table.appendTo('.resultsFrame').DataTable( { "paging": false });
+
+		$('html, body').animate({
+			scrollTop: this.table.offset().top
+		}, 1000);
 	};
 	this.formatMove = function(attacker, defender, move) {
 		var td = $('<td>').text(move['name']);

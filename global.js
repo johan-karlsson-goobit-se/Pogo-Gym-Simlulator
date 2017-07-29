@@ -1,11 +1,3 @@
-if(window.location.search == '') {
-$(document).ready(function() {
-$('<div style="    width: 400px;    height: 300px;    text-align: center;    position: absolute;    top:0;    bottom: 0;    left: 0;    right: 0;    margin: auto;"><h1><a href="PoGoGymSim.html?newFormula">new stats</a>  <a href="PoGoGymSim.html?oldFormula">old stats</a></h1><div style="text-align: left"><strong>Important notice about performance: </strong> This tool runs simulations in your browser -- millions of them. Therefore it may take up to 15 minutes for a simulation to complete.<br><br>Do not run the heavier simulations on a cell phone or a tablet, it will be so slow that you will run out of battery before it completes.<br><br>We also recommends that you use <strong>Google Chrome</strong> to run these simulations, for this specific purpouse we have found it to be about 10 times faster than other browsers like Firefox or Internet Explorer.</div></div>').appendTo('body');
-});
-} else {
-
-
-
 data = new Dataset();
 $(document).ready(function() {
 //	(new Form()).mostEffective('defender').appendTo('body');
@@ -1316,13 +1308,13 @@ function showLeastEffectiveDefender(attacker, dodge, repeats) {
 	resultsView.outputResults();
 };
 
-function showMaxEffectiveLevel(attacker) {
+function showMaxEffectiveLevel(attacker, raidDefender, attackIV, showAll) {
 	var resultsView = new ResultsView();
-	resultsView.addDescription("Level you need to power up your Pokemon to to max out the quick move against Tyranitar", attacker);
-	resultsView.addHeader(['Name', 'Level', 'Quick Attack', 'DMG Quick', 'Energy Quick', 'DPS Quick', 'EPS Quick']);
+	resultsView.addDescription("How far it is useful to power up your " + attacker.name + " if you are going to use to fight a Raid " + raidDefender + ". Weave DPS is how much HP your " + attacker.name + " will remove from the Raid " + raidDefender + " per second. Thats the interesting number in this table. :) ");
+	resultsView.addHeader(['Name', 'Level', 'Quick Move', 'Charge Move', 'DMG<br>Quick', 'Energy<br>Quick', 'DPS<br>Quick', 'EPS<br>Quick', 'DMG<br>Charge', 'Energy<br>Charge', 'DPS<br>Charge', 'Weave<br>DPS']);
 
 	for(var i in data.pokemon) {
-		if(data.pokemon[i].name != 'Tyranitar') {
+		if(data.pokemon[i].name != raidDefender) {
 			continue;
 		}
 
@@ -1331,36 +1323,45 @@ function showMaxEffectiveLevel(attacker) {
 		
 		var lastQuickDamage = 0;
 		for(var level = 1; level <= 39; level += 0.5) {
-			var newAttacker = Pokemon.newAttacker(attacker['name'], attacker['selectedFast']['name'], attacker['selectedSpecial']['name'], level);
+			var newAttacker = Pokemon.newAttacker(attacker['name'], attacker['selectedFast']['name'], attacker['selectedSpecial']['name'], level, attackIV);
 			var defender = Pokemon.newDefender(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], 40);
 			if(!defender) {
 				continue;
 			}
 			
-			console.log(newAttacker);
 			var battle = new Battle(newAttacker, defender, 'none');
 
-			if(lastQuickDamage == battle.attacker.selectedFast.damage) {
+			if(showAll != 'yes' && lastQuickDamage == battle.attacker.selectedFast.damage && battle.attacker.level != 39) {
 				continue;
-			}
+			}			
+			
+			var showBold = (showAll == 'yes' && lastQuickDamage != battle.attacker.selectedFast.damage);
+			
 			lastQuickDamage = battle.attacker.selectedFast.damage;
 			
+			var numberOfTimesQuickMoveIsNeeded = - battle.attacker.selectedSpecial.energy / battle.attacker.selectedFast.energy;
+			var totalTimeNeeded = battle.attacker.selectedFast.cooldown / 1000 * numberOfTimesQuickMoveIsNeeded + battle.attacker.selectedSpecial.cooldown / 1000;
+			var totalDamage = numberOfTimesQuickMoveIsNeeded * battle.attacker.selectedFast.damage + battle.attacker.selectedSpecial.damage;
+			var weaveDPS = (totalDamage / totalTimeNeeded).toFixed(2);
 
 			resultsView.addRow(
 				[
 					battle.attacker.name,
 					battle.attacker.level,
 					battle.attacker.selectedFast.name,
+					battle.attacker.selectedSpecial.name,
 					battle.attacker.selectedFast.damage,
 					battle.attacker.selectedFast.energy,
-					battle.attacker.selectedFast.damage / battle.attacker.selectedFast.cooldown * 1000,
-					battle.attacker.selectedFast.energy / battle.attacker.selectedFast.cooldown * 1000
-				]
+					(battle.attacker.selectedFast.damage / battle.attacker.selectedFast.cooldown * 1000).toFixed(2),
+					(battle.attacker.selectedFast.energy / battle.attacker.selectedFast.cooldown * 1000).toFixed(2),
+					battle.attacker.selectedSpecial.damage,
+					battle.attacker.selectedSpecial.energy,
+					(battle.attacker.selectedSpecial.damage / battle.attacker.selectedSpecial.cooldown * 1000).toFixed(2),
+					'<b>' + weaveDPS + '</b>'
+				], showBold
 			);
 
 		}
 	}
 	resultsView.outputResults();
 };
-
-}

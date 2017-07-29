@@ -178,15 +178,10 @@ function Dataset() {
 		newPokemon['name'] = Pokemon[i][0];
 		newPokemon['number'] = Pokemon[i][1];
 			
-		if(window.location.search == '?oldFormula') { //if this isnt an ugly hack I dont know what is
-			newPokemon['baseSta'] = Pokemon[i][2];
-			newPokemon['baseAtk'] = Pokemon[i][3];
-			newPokemon['baseDef'] = Pokemon[i][4];
-		} else {
-			newPokemon['baseSta'] = newStats[ newPokemon['number'] ][0];
-			newPokemon['baseAtk'] = newStats[ newPokemon['number'] ][1];
-			newPokemon['baseDef'] = newStats[ newPokemon['number'] ][2];
-		}
+		newPokemon['baseSta'] = newStats[ newPokemon['number'] ][0];
+		newPokemon['baseAtk'] = newStats[ newPokemon['number'] ][1];
+		newPokemon['baseDef'] = newStats[ newPokemon['number'] ][2];
+			
 		newPokemon['type'] = [];
 		newPokemon['type'].push(Pokemon[i][5]);
 		newPokemon['type'].push(Pokemon[i][6]);
@@ -221,7 +216,7 @@ function Dataset() {
 		}
 		CPMSorted[CPM[i][0]] = CPM[i][1];
 	}
-console.log(CPMSorted);
+
 	var MovesSorted = {};
 	for(var i in Moves) {
 		var row = {};
@@ -242,8 +237,6 @@ console.log(CPMSorted);
 	this.effective = EffectiveSorted;
 	this.pokemon = PokemonSorted;
 	this.cpm = CPMSorted;
-
-	console.log(JSON.stringify(this.pokemon));
 
 	var pokemons = {};		
 	var j = 0;
@@ -284,7 +277,7 @@ console.log(CPMSorted);
 				}
 			}
 			
-			if(/* mon['number'] <= 149 && */ mon['number'] != 144 && mon['number'] != 145 && mon['number'] != 146 && mon['number'] != 132) {
+			if(mon['number'] != 132) {
 				pokemons[ mon['name'] ] = mon;
 			}
 		}
@@ -338,13 +331,13 @@ console.log(CPMSorted);
 	}
 	
 	this.pokemon = pokemons;
+	console.log(this.pokemon);
 	var moves = {};
 	
 	
 	for(var i in GAME_MASTER['itemTemplates']) {
 		var item = GAME_MASTER['itemTemplates'][i];
 		if(typeof item['moveSettings'] != 'undefined') {
-//			console.log(item['moveSettings']);
 			var move_GM = item['moveSettings'];
 			var move = {};
 			move['duration'] = move_GM['durationMs'];
