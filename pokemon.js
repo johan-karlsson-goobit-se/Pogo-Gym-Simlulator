@@ -5,7 +5,8 @@ function Pokemon(name) {
 
 
 Pokemon.newDefender = function(name, fastMove, specialMove, level) {
-	var me = Pokemon.newAttacker(name, fastMove, specialMove, level);
+	var attackIV = 15;
+	var me = Pokemon.newAttacker(name, fastMove, specialMove, level, attackIV);
 	if( !me ) {
 		return null;
 	}
@@ -18,7 +19,8 @@ Pokemon.newDefender = function(name, fastMove, specialMove, level) {
 Pokemon.newAttackerWithMaxCP = function(name, fastMove, specialMove, maxCP) {
 	var level = 40;
 	do {
-		var attacker = Pokemon.newAttacker(name,  fastMove, specialMove, level);
+		var attackIV = 15;
+		var attacker = Pokemon.newAttacker(name,  fastMove, specialMove, level, attackIV);
 		if( !attacker ) {
 			return null;
 		}
@@ -31,7 +33,8 @@ Pokemon.newAttackerWithMaxCP = function(name, fastMove, specialMove, maxCP) {
 Pokemon.newDefenderWithMinCP = function(name, fastMove, specialMove, minCP) {
 	var level = 1;
 	do {
-		var defender = Pokemon.newDefender(name,  fastMove, specialMove, level);
+		var attackIV = 15;
+		var defender = Pokemon.newDefender(name,  fastMove, specialMove, level, attackIV);
 		if( !defender ) {
 			return null;
 		}

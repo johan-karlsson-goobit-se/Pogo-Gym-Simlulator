@@ -1308,10 +1308,52 @@ function showLeastEffectiveDefender(attacker, dodge, repeats) {
 	resultsView.outputResults();
 };
 
+
+function getBattleTimerFromRaidDefenderName(defenderName) {
+	
+	var lvl1Mons = ['Magikarp', 'Bayleef', 'Quilava', 'Croconaw'];
+	var lvl2Mons = ['Muk', 'Exeggutor', 'Weezing', 'Electabuzz', 'Magmar'];
+	var lvl3Mons = ['Arcanine', 'Alakazam', 'Machamp', 'Gengar', 'Vaporeon', 'Jolteon', 'Flareon'];
+	var lvl4Mons = ['Venusaur', 'Charizard', 'Blastoise', 'Rhydon', 'Lapras', 'Snorlax', 'Tyranitar'];
+	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi'];
+	
+	if(lvl5Mons.indexOf(defenderName) == -1) {
+		return 180;
+	} else {
+		return 300;
+	}
+}
+
+function getHPfromRaidDefenderName(defenderName) {
+	// this is ugly as hell, but quick copypasta is tasty copypasta.
+	var lvl1Mons = ['Magikarp', 'Bayleef', 'Quilava', 'Croconaw'];
+	var lvl2Mons = ['Muk', 'Exeggutor', 'Weezing', 'Electabuzz', 'Magmar'];
+	var lvl3Mons = ['Arcanine', 'Alakazam', 'Machamp', 'Gengar', 'Vaporeon', 'Jolteon', 'Flareon'];
+	var lvl4Mons = ['Venusaur', 'Charizard', 'Blastoise', 'Rhydon', 'Lapras', 'Snorlax', 'Tyranitar'];
+	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi'];
+
+	if(lvl5Mons.indexOf(defenderName) != -1) {
+		return 12500;
+	} else if(lvl4Mons.indexOf(defenderName) != -1) {
+		return 7500;
+	} else if(lvl3Mons.indexOf(defenderName) != -1) {
+		return 3000;
+	} else if(lvl2Mons.indexOf(defenderName) != -1) {
+		return 1800;
+	} else if(lvl1Mons.indexOf(defenderName) != -1) {
+		return 600;
+	} else {
+		return 0;
+	}
+}
+
 function showMaxEffectiveLevel(attacker, raidDefender, attackIV, showAll) {
+	var battleTimer = getBattleTimerFromRaidDefenderName(raidDefender);
+	var defenderHP = getHPfromRaidDefenderName(raidDefender);
+	
 	var resultsView = new ResultsView();
 	resultsView.addDescription("How far it is useful to power up your " + attacker.name + " if you are going to use to fight a Raid " + raidDefender + ". Weave DPS is how much HP your " + attacker.name + " will remove from the Raid " + raidDefender + " per second. Thats the interesting number in this table. :) ");
-	resultsView.addHeader(['Name', 'Level', 'Quick Move', 'Charge Move', 'DMG<br>Quick', 'Energy<br>Quick', 'DPS<br>Quick', 'EPS<br>Quick', 'DMG<br>Charge', 'Energy<br>Charge', 'DPS<br>Charge', 'Weave<br>DPS']);
+	resultsView.addHeader(['Name', 'Level', 'Quick Move', 'Charge Move', 'Weave<br>DPS', 'Min #<br>trainers', '# of '+ attacker.name +'<br>needed']);
 
 	for(var i in data.pokemon) {
 		if(data.pokemon[i].name != raidDefender) {
@@ -1325,6 +1367,7 @@ function showMaxEffectiveLevel(attacker, raidDefender, attackIV, showAll) {
 		for(var level = 1; level <= 39; level += 0.5) {
 			var newAttacker = Pokemon.newAttacker(attacker['name'], attacker['selectedFast']['name'], attacker['selectedSpecial']['name'], level, attackIV);
 			var defender = Pokemon.newDefender(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], 40);
+			
 			if(!defender) {
 				continue;
 			}
@@ -1339,10 +1382,51 @@ function showMaxEffectiveLevel(attacker, raidDefender, attackIV, showAll) {
 			
 			lastQuickDamage = battle.attacker.selectedFast.damage;
 			
+			// for the attacker
 			var numberOfTimesQuickMoveIsNeeded = - battle.attacker.selectedSpecial.energy / battle.attacker.selectedFast.energy;
 			var totalTimeNeeded = battle.attacker.selectedFast.cooldown / 1000 * numberOfTimesQuickMoveIsNeeded + battle.attacker.selectedSpecial.cooldown / 1000;
 			var totalDamage = numberOfTimesQuickMoveIsNeeded * battle.attacker.selectedFast.damage + battle.attacker.selectedSpecial.damage;
 			var weaveDPS = (totalDamage / totalTimeNeeded).toFixed(2);
+			
+			
+			// for the defender
+			var numberOfTimesQuickMoveIsNeededDefender = - battle.defender.selectedSpecial.energy / battle.defender.selectedFast.energy;
+			var totalTimeNeededDefender = battle.defender.selectedFast.cooldown / 1000 * numberOfTimesQuickMoveIsNeededDefender + battle.defender.selectedSpecial.cooldown / 1000;
+			var totalDamageDefender = numberOfTimesQuickMoveIsNeeded * battle.defender.selectedFast.damage + battle.defender.selectedSpecial.damage;
+			var weaveDPSDefender = (totalDamageDefender / totalTimeNeededDefender).toFixed(2);
+			
+			var timeToKillAttacker = battle.attacker.HP / weaveDPSDefender;
+			console.log(battle);
+			console.log("time to kill attacker: " + timeToKillAttacker);
+			
+			var timeNeededToKillDefender = defenderHP / weaveDPS;
+			
+			
+			console.log("time to kill defender: " + timeNeededToKillDefender);
+			
+			
+			var timePassed = 0;
+			var damageDone = 0;
+			var attackersUsed = 0;
+			do {
+				var multi = 1;
+				if(timeToKillAttacker > (battleTimer - timePassed)) { // we can't fight a whole fight before timeout
+					multi = (battleTimer - timePassed) / timeToKillAttacker;
+				}
+				damageDone += weaveDPS * timeToKillAttacker * multi;
+				console.log(weaveDPS * timeToKillAttacker * multi);
+				var timeForPokemonSwap = 4;
+				timePassed += timeToKillAttacker + timeForPokemonSwap;
+				attackersUsed++;
+				if(attackersUsed % 6 == 0) {
+					var timeToSelectNewPokemons = 15;
+					timePassed += timeToSelectNewPokemons; // select new pokemons
+				}
+			} while ( timePassed < battleTimer );
+			console.log("Damage done: " + damageDone);
+			var trainersNeeded = defenderHP / damageDone;
+			
+			var totalAttackersNeeded = attackersUsed * trainersNeeded;
 
 			resultsView.addRow(
 				[
@@ -1350,14 +1434,9 @@ function showMaxEffectiveLevel(attacker, raidDefender, attackIV, showAll) {
 					battle.attacker.level,
 					battle.attacker.selectedFast.name,
 					battle.attacker.selectedSpecial.name,
-					battle.attacker.selectedFast.damage,
-					battle.attacker.selectedFast.energy,
-					(battle.attacker.selectedFast.damage / battle.attacker.selectedFast.cooldown * 1000).toFixed(2),
-					(battle.attacker.selectedFast.energy / battle.attacker.selectedFast.cooldown * 1000).toFixed(2),
-					battle.attacker.selectedSpecial.damage,
-					battle.attacker.selectedSpecial.energy,
-					(battle.attacker.selectedSpecial.damage / battle.attacker.selectedSpecial.cooldown * 1000).toFixed(2),
-					'<b>' + weaveDPS + '</b>'
+					'<b>' + weaveDPS + '</b>',
+					trainersNeeded.toFixed(2),
+					Math.ceil(totalAttackersNeeded)
 				], showBold
 			);
 
