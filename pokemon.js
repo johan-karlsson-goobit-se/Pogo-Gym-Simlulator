@@ -60,7 +60,8 @@ Pokemon.newAttacker = function(name, fastMove, specialMove, level, attackIV) {
 		me['legacy'] = ' <span style="font-size: 7px;">Legacy<span>';
 	} else {
 		// this mon cant exist!
-		return null;
+//		return null;
+		me['legacy'] = ' <span style="font-size: 7px;">Legacy TM<span>';
 	}
 
 	me['selectedFast'] = [];

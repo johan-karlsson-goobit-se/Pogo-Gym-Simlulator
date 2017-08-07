@@ -8,6 +8,8 @@ $(document).ready(function() {
 //	(new Form()).bestAgainst().appendTo('body');
 	
 	(new Form()).showMaxEffectiveLevel().appendTo('body');
+	(new Form()).bestRaiders().appendTo('body');
+	
 	
 	/*
 	$('<div style="color: blue; clear: both;">[info]</a>').appendTo('body').on('click', function() {
@@ -1443,4 +1445,144 @@ function showMaxEffectiveLevel(attacker, raidDefender, attackIV, showAll) {
 		}
 	}
 	resultsView.outputResults();
+};
+
+function getBestRaiders(raidDefender) {
+	if(!confirm("This simulation will take a long time. If you run it on a phone, it may take up to 10 minutes. Are you sure?")) {
+		return false;
+	}
+	
+	
+	var battleTimer = getBattleTimerFromRaidDefenderName(raidDefender);
+	var defenderHP = getHPfromRaidDefenderName(raidDefender);
+	var resultsView = new ResultsView();
+	resultsView.addDescription("This view shows how the different pokemons compare to each other in a fight against a Raid " + raidDefender + ". It is assumed that your attacker have an attack IV of 15. If it doesn't, use the \"The most useful level to power up to\" function to find how much further you need to power up your attacker to get comparable results. Weave DPS is how much HP your " + "todo" + " will remove from the Raid " + raidDefender + " per second. Thats the interesting number in this table. :) ");
+	resultsView.addHeader(['Rank', 'Name', 'Level', 'Attack<br>IV', 'Quick Move', 'Charge Move', 'Weave<br>DPS', 'Min #<br>trainers', '# of '+ "attackers" +'<br>needed']);
+
+	for(var i in data.pokemon) {
+		if(data.pokemon[i].name != raidDefender) {
+			continue;
+		}
+		var j = 0;
+		var k = 0;
+		var defender = Pokemon.newDefender(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], 40);
+		var results = [];
+		
+		for(var m in data.pokemon) {
+			$('title').text('PoGo Gym Sim - Simulating ' + data.pokemon[m].number + '/251');
+//			if(data.pokemon[m].number  > 20) {
+//				continue;
+//			}
+			for(var n in data.pokemon[m].fastMoves) {
+				for(var p in data.pokemon[m].specialMoves) {
+
+					var lastQuickDamage = 0;
+					for(var level = 1; level <= 39; level += 0.5) {
+						var attackIV = 15;
+						var newAttacker = Pokemon.newAttacker(data.pokemon[m]['name'], data.pokemon[m]['fastMoves'][n], data.pokemon[m]['specialMoves'][p], level, attackIV);
+
+						
+						if(!defender) {
+							console.error("No defender found");
+							continue;
+						}
+
+
+						var battle = new Battle(newAttacker, defender, 'none');
+
+						// todo: make sure we show the next level 1 pokemon as well
+						if(lastQuickDamage == battle.attacker.selectedFast.damage && battle.attacker.level != 39) {
+							continue;
+						}			
+						
+						var showBold = false; //(showAll == 'yes' && lastQuickDamage != battle.attacker.selectedFast.damage);
+						
+						lastQuickDamage = battle.attacker.selectedFast.damage;
+						
+						// for the attacker
+						var numberOfTimesQuickMoveIsNeeded = - battle.attacker.selectedSpecial.energy / battle.attacker.selectedFast.energy;
+						var totalTimeNeeded = battle.attacker.selectedFast.cooldown / 1000 * numberOfTimesQuickMoveIsNeeded + battle.attacker.selectedSpecial.cooldown / 1000;
+						var totalDamage = numberOfTimesQuickMoveIsNeeded * battle.attacker.selectedFast.damage + battle.attacker.selectedSpecial.damage;
+						var weaveDPS = (totalDamage / totalTimeNeeded).toFixed(2);
+						
+						
+						// for the defender
+						var numberOfTimesQuickMoveIsNeededDefender = - battle.defender.selectedSpecial.energy / battle.defender.selectedFast.energy;
+						var totalTimeNeededDefender = battle.defender.selectedFast.cooldown / 1000 * numberOfTimesQuickMoveIsNeededDefender + battle.defender.selectedSpecial.cooldown / 1000;
+						var totalDamageDefender = numberOfTimesQuickMoveIsNeeded * battle.defender.selectedFast.damage + battle.defender.selectedSpecial.damage;
+						var weaveDPSDefender = (totalDamageDefender / totalTimeNeededDefender).toFixed(2);
+						
+						var timeToKillAttacker = battle.attacker.HP / weaveDPSDefender;
+						//console.log("time to kill attacker: " + timeToKillAttacker);
+						
+						var timeNeededToKillDefender = defenderHP / weaveDPS;
+						
+						
+						//console.log("time to kill defender: " + timeNeededToKillDefender);
+						
+						
+						var timePassed = 0;
+						var damageDone = 0;
+						var attackersUsed = 0;
+						do {
+							var multi = 1;
+							if(timeToKillAttacker > (battleTimer - timePassed)) { // we can't fight a whole fight before timeout
+								multi = (battleTimer - timePassed) / timeToKillAttacker;
+							}
+							damageDone += weaveDPS * timeToKillAttacker * multi;
+							//console.log(weaveDPS * timeToKillAttacker * multi);
+							var timeForPokemonSwap = 4;
+							timePassed += timeToKillAttacker + timeForPokemonSwap;
+							attackersUsed++;
+							if(attackersUsed % 6 == 0) {
+								var timeToSelectNewPokemons = 15;
+								timePassed += timeToSelectNewPokemons; // select new pokemons
+							}
+						} while ( timePassed < battleTimer );
+						//console.log("Damage done: " + damageDone);
+						var trainersNeeded = defenderHP / damageDone;
+						
+						var totalAttackersNeeded = attackersUsed * trainersNeeded;
+						
+						results.push([
+							battle.attacker.name,
+							battle.attacker.level,
+							attackIV,
+							battle.attacker.selectedFast.name,
+							battle.attacker.selectedSpecial.name,
+							'<b>' + weaveDPS + '</b>',
+							trainersNeeded.toFixed(2),
+							Math.ceil(totalAttackersNeeded)
+						]);
+					}
+				}
+			}
+		}
+		
+	}
+	
+	results.sort(function(a,b) { 
+		// I really want to go and catch some unowns and cant remember how to do this properly..
+		key_a = parseFloat(a[5].replace('>','').replace('>','').replace('<','').replace('<','').replace('b','').replace('b','').replace('/',''));
+		key_b = parseFloat(b[5].replace('>','').replace('>','').replace('<','').replace('<','').replace('b','').replace('b','').replace('/',''));
+
+		if(key_a > key_b) {
+			return -1;
+		}
+		if(key_a < key_b) {
+			return 1;
+		}		
+
+		return 0;
+	
+	});
+	
+	$('title').text('PoGo Gym Sim - Please wait while sorting results');
+
+	for(var res in results) {
+		results[res].unshift(parseInt(res)+1); // res is a counter. Unshift puts it at the beginning of the array.
+		resultsView.addRow(results[res], false);
+	}
+	resultsView.outputResults();
+	$('title').text('PoGo Gym Sim');
 };

@@ -295,6 +295,25 @@ function Form() {
 		var text = 'The most useful level to power up to';
 		return $("<div>").text(text).addClass("settingsBox").append(form);
 	};
+
+	this.bestRaiders = function() {
+		var raidDefenderController = addRaidDefenderController();
+//		var pokemonController = addPokemonController();
+//		var attackIVController = addAttackIVController();
+//		addLevelController();
+//		var qm = addQuickMoveController(pokemonController);
+//		addChargeMoveController(pokemonController, qm);
+//		addDodgeController();
+//		addRepeatBattleController();
+//		addShowAllController();
+		addGoButton(function(form, config) {
+			getBestRaiders(getRaidDefender());
+		});
+
+		var text = 'Highest DPS attacker agains raid boss';
+		return $("<div>").text(text).addClass("settingsBox").append(form);
+	};
+
 	
 	this.mostEffective = function(forWhat) {
 		var pokemonController = addPokemonController();
