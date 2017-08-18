@@ -491,6 +491,11 @@ function Dataset() {
 		}
 	}
 	
+	// fix for update to mewtwo
+	pokemons['Mewtwo']['baseAtk'] = 300;
+	pokemons['Mewtwo']['baseDef'] = 182;
+	pokemons['Mewtwo']['baseSta'] = 193;
+	
 	this.pokemon = pokemons;
 	console.log(this.pokemon);
 	var moves = {};

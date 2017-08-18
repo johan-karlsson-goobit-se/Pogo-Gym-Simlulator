@@ -1317,7 +1317,7 @@ function getBattleTimerFromRaidDefenderName(defenderName) {
 	var lvl2Mons = ['Muk', 'Exeggutor', 'Weezing', 'Electabuzz', 'Magmar'];
 	var lvl3Mons = ['Arcanine', 'Alakazam', 'Machamp', 'Gengar', 'Vaporeon', 'Jolteon', 'Flareon'];
 	var lvl4Mons = ['Venusaur', 'Charizard', 'Blastoise', 'Rhydon', 'Lapras', 'Snorlax', 'Tyranitar'];
-	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi'];
+	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi', 'Mewtwo'];
 	
 	if(lvl5Mons.indexOf(defenderName) == -1) {
 		return 180;
@@ -1332,7 +1332,7 @@ function getHPfromRaidDefenderName(defenderName) {
 	var lvl2Mons = ['Muk', 'Exeggutor', 'Weezing', 'Electabuzz', 'Magmar'];
 	var lvl3Mons = ['Arcanine', 'Alakazam', 'Machamp', 'Gengar', 'Vaporeon', 'Jolteon', 'Flareon'];
 	var lvl4Mons = ['Venusaur', 'Charizard', 'Blastoise', 'Rhydon', 'Lapras', 'Snorlax', 'Tyranitar'];
-	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi'];
+	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi', 'Mewtwo'];
 
 	if(lvl5Mons.indexOf(defenderName) != -1) {
 		return 12500;

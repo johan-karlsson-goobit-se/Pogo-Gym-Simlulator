@@ -17,7 +17,7 @@ function Form() {
 	function addRaidDefenderController() {
 		$("<strong>Defender: </strong>").appendTo(form);
 		var select = $("<select>").appendTo(form);
-		var raidDefenderList = ['Magikarp', 'Croconaw', 'Bayleef', 'Quilava', 'Electabuzz', 'Exeggutor', 'Magmar', 'Muk', 'Weezing', 'Vaporeon', 'Arcanine', 'Machamp', 'Jolteon', 'Gengar', 'Flareon', 'Alakazam', 'Lapras', 'Blastoise', 'Venusaur', 'Charizard', 'Snorlax', 'Rhydon', 'Tyranitar', 'Lugia', 'Articuno', 'Zapdos', 'Moltres'];
+		var raidDefenderList = ['Magikarp', 'Croconaw', 'Bayleef', 'Quilava', 'Electabuzz', 'Exeggutor', 'Magmar', 'Muk', 'Weezing', 'Vaporeon', 'Arcanine', 'Machamp', 'Jolteon', 'Gengar', 'Flareon', 'Alakazam', 'Lapras', 'Blastoise', 'Venusaur', 'Charizard', 'Snorlax', 'Rhydon', 'Tyranitar', 'Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo'];
 		for(var i in raidDefenderList) {
 			$("<option value='"+raidDefenderList[i]+"'>Raid "+raidDefenderList[i]+"</option>").appendTo(select);
 		}
