@@ -496,6 +496,19 @@ function Dataset() {
 	pokemons['Mewtwo']['baseDef'] = 182;
 	pokemons['Mewtwo']['baseSta'] = 193;
 	
+	pokemons['Ho-Oh'] = {
+	    "name": "Ho-Oh",
+	    "number": 250,
+	    "baseSta": 193,
+	    "baseAtk": 239,
+	    "baseDef": 274,
+	    "type": ["Fire", "Flying"],
+	    "fastMoves": ["Extrasensory", "Steel Wing"],
+	    "specialMoves": ["Brave Bird", "Fire Blast", "Solar Beam"],
+	    "newMoves": ["Extrasensory-Brave Bird", "Extrasensory-Fire Blast", "Extrasensory-Solar Beam", "Steel Wing-Brave Bird", "Steel Wing-Solar Beam", "Steel Wing-Solar Beam"],
+	    "legacyMoves": []
+	};
+	
 	this.pokemon = pokemons;
 	console.log(this.pokemon);
 	var moves = {};

@@ -17,7 +17,7 @@ function Form() {
 	function addRaidDefenderController() {
 		$("<strong>Defender: </strong>").appendTo(form);
 		var select = $("<select>").appendTo(form);
-		var raidDefenderList = ['Magikarp', 'Croconaw', 'Bayleef', 'Quilava', 'Electabuzz', 'Exeggutor', 'Magmar', 'Muk', 'Weezing', 'Vaporeon', 'Arcanine', 'Machamp', 'Jolteon', 'Gengar', 'Flareon', 'Alakazam', 'Lapras', 'Blastoise', 'Venusaur', 'Charizard', 'Snorlax', 'Rhydon', 'Tyranitar', 'Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Entei', 'Raikou', 'Suicune'];
+		var raidDefenderList = ['Ivysaur', 'Charmeleon', 'Wartortle', 'Metapod', 'Magikarp', 'Sandslash', 'Tentacruel', 'Magneton', 'Cloyster', 'Marowak', 'Sableye', 'Ninetales', 'Alakazam', 'Machamp', 'Gengar', 'Scyther', 'Porygon', 'Omastar', 'Nidoqueen', 'Nidoking', 'Poliwrath', 'Victreebel', 'Golem', 'Lapras', 'Snorlax', 'Tyranitar', 'Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi', 'Mewtwo', 'Entei', 'Raikou', 'Suicune'];
 		for(var i in raidDefenderList) {
 			$("<option value='"+raidDefenderList[i]+"'>Raid "+raidDefenderList[i]+"</option>").appendTo(select);
 		}
@@ -37,9 +37,10 @@ function Form() {
 	function addAttackIVController() {
 		$("<strong>Attack IV: </strong>").appendTo(form);
 		var select = $("<select>").appendTo(form);
-		for(i = 0; i <= 15; i++) {
+		for(i = 0; i <= 14; i++) {
 			$("<option value='"+i+"'>"+i+"</option>").appendTo(select);
 		}
+		$("<option value='"+i+"' selected='selected'>"+i+"</option>").appendTo(select);
 		$('<br>').appendTo(form);
 		that.attackIVController = select;
 		
@@ -139,7 +140,7 @@ function Form() {
 					// all is fine, legacy move
 				} else {
 					// move cant exist!
-					continue;
+					//continue; // tms now exists, lets allow combos that cant actually exist
 				}
 				$("<option value='"+ data.pokemon[ selectedPokemon ]['specialMoves'][i] +"'>"+ data.pokemon[ selectedPokemon ]['specialMoves'][i] +"</option>").appendTo(selectquick);
 			}

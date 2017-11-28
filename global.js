@@ -1313,10 +1313,10 @@ function showLeastEffectiveDefender(attacker, dodge, repeats) {
 
 function getBattleTimerFromRaidDefenderName(defenderName) {
 	
-	var lvl1Mons = ['Magikarp', 'Bayleef', 'Quilava', 'Croconaw'];
-	var lvl2Mons = ['Muk', 'Exeggutor', 'Weezing', 'Electabuzz', 'Magmar'];
-	var lvl3Mons = ['Arcanine', 'Alakazam', 'Machamp', 'Gengar', 'Vaporeon', 'Jolteon', 'Flareon'];
-	var lvl4Mons = ['Venusaur', 'Charizard', 'Blastoise', 'Rhydon', 'Lapras', 'Snorlax', 'Tyranitar'];
+	var lvl1Mons = ['Ivysaur', 'Charmeleon', 'Wartortle', 'Metapod', 'Magikarp'];
+	var lvl2Mons = ['Sandslash', 'Tentacruel', 'Magneton', 'Cloyster', 'Marowak', 'Sableye'];
+	var lvl3Mons = ['Ninetales', 'Alakazam', 'Machamp', 'Gengar', 'Scyther', 'Porygon', 'Omastar'];
+	var lvl4Mons = ['Nidoqueen', 'Nidoking', 'Poliwrath', 'Victreebel', 'Golem', 'Lapras', 'Snorlax', 'Tyranitar'];
 	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi', 'Mewtwo', 'Entei', 'Raikou', 'Suicune'];
 	
 	if(lvl5Mons.indexOf(defenderName) == -1) {
@@ -1328,10 +1328,10 @@ function getBattleTimerFromRaidDefenderName(defenderName) {
 
 function getHPfromRaidDefenderName(defenderName) {
 	// this is ugly as hell, but quick copypasta is tasty copypasta.
-	var lvl1Mons = ['Magikarp', 'Bayleef', 'Quilava', 'Croconaw'];
-	var lvl2Mons = ['Muk', 'Exeggutor', 'Weezing', 'Electabuzz', 'Magmar'];
-	var lvl3Mons = ['Arcanine', 'Alakazam', 'Machamp', 'Gengar', 'Vaporeon', 'Jolteon', 'Flareon'];
-	var lvl4Mons = ['Venusaur', 'Charizard', 'Blastoise', 'Rhydon', 'Lapras', 'Snorlax', 'Tyranitar'];
+	var lvl1Mons = ['Ivysaur', 'Charmeleon', 'Wartortle', 'Metapod', 'Magikarp'];
+	var lvl2Mons = ['Sandslash', 'Tentacruel', 'Magneton', 'Cloyster', 'Marowak', 'Sableye'];
+	var lvl3Mons = ['Ninetales', 'Alakazam', 'Machamp', 'Gengar', 'Scyther', 'Porygon', 'Omastar'];
+	var lvl4Mons = ['Nidoqueen', 'Nidoking', 'Poliwrath', 'Victreebel', 'Golem', 'Lapras', 'Snorlax', 'Tyranitar'];
 	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi', 'Mewtwo', 'Entei', 'Raikou', 'Suicune'];
 
 	if(lvl5Mons.indexOf(defenderName) != -1) {
@@ -1344,6 +1344,28 @@ function getHPfromRaidDefenderName(defenderName) {
 		return 1800;
 	} else if(lvl1Mons.indexOf(defenderName) != -1) {
 		return 600;
+	} else {
+		return 0;
+	}
+}
+
+function getCPMfromRaidDefenderName(defenderName) {
+	// this is ugly as hell, but quick copypasta is tasty copypasta.
+	var lvl1Mons = ['Ivysaur', 'Charmeleon', 'Wartortle', 'Metapod', 'Magikarp'];
+	var lvl2Mons = ['Sandslash', 'Tentacruel', 'Magneton', 'Cloyster', 'Marowak', 'Sableye'];
+	var lvl3Mons = ['Ninetales', 'Alakazam', 'Machamp', 'Gengar', 'Scyther', 'Porygon', 'Omastar'];
+	var lvl4Mons = ['Nidoqueen', 'Nidoking', 'Poliwrath', 'Victreebel', 'Golem', 'Lapras', 'Snorlax', 'Tyranitar'];
+	var lvl5Mons = ['Lugia', 'Articuno', 'Zapdos', 'Moltres', 'Mewtwo', 'Mew', 'Raikou', 'Entei', 'Ho-Oh', 'Suicune', 'Celebi', 'Mewtwo', 'Entei', 'Raikou', 'Suicune'];
+	if(lvl5Mons.indexOf(defenderName) != -1) {
+		return 0.79;
+	} else if(lvl4Mons.indexOf(defenderName) != -1) {
+		return 0.79;
+	} else if(lvl3Mons.indexOf(defenderName) != -1) {
+		return 0.73;
+	} else if(lvl2Mons.indexOf(defenderName) != -1) {
+		return 0.67;
+	} else if(lvl1Mons.indexOf(defenderName) != -1) {
+		return 0.61;
 	} else {
 		return 0;
 	}
@@ -1366,9 +1388,13 @@ function showMaxEffectiveLevel(attacker, raidDefender, attackIV, showAll) {
 		var k = 0;
 		
 		var lastQuickDamage = 0;
-		for(var level = 1; level <= 39; level += 0.5) {
+		for(var level = 1; level <= 40; level += 0.5) {
+			console.log('fooo');
+						console.log( getCPMfromRaidDefenderName(data.pokemon[i]['name']) );
 			var newAttacker = Pokemon.newAttacker(attacker['name'], attacker['selectedFast']['name'], attacker['selectedSpecial']['name'], level, attackIV);
-			var defender = Pokemon.newDefender(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], 40);
+
+
+			var defender = Pokemon.newDefender(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], getCPMfromRaidDefenderName(data.pokemon[i]['name']), -1);
 			
 			if(!defender) {
 				continue;
@@ -1376,7 +1402,7 @@ function showMaxEffectiveLevel(attacker, raidDefender, attackIV, showAll) {
 			
 			var battle = new Battle(newAttacker, defender, 'none');
 
-			if(showAll != 'yes' && lastQuickDamage == battle.attacker.selectedFast.damage && battle.attacker.level != 39) {
+			if(showAll != 'yes' && lastQuickDamage == battle.attacker.selectedFast.damage && battle.attacker.level != 40) {
 				continue;
 			}			
 			
@@ -1465,7 +1491,7 @@ function getBestRaiders(raidDefender) {
 		}
 		var j = 0;
 		var k = 0;
-		var defender = Pokemon.newDefender(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], 40);
+		var defender = Pokemon.newDefender(data.pokemon[i]['name'], data.pokemon[i]['fastMoves'][j], data.pokemon[i]['specialMoves'][k], getCPMfromRaidDefenderName(data.pokemon[i]['name']), -1);
 		var results = [];
 		
 		for(var m in data.pokemon) {
@@ -1477,7 +1503,7 @@ function getBestRaiders(raidDefender) {
 				for(var p in data.pokemon[m].specialMoves) {
 
 					var lastQuickDamage = 0;
-					for(var level = 1; level <= 39; level += 0.5) {
+					for(var level = 1; level <= 40; level += 0.5) {
 						var attackIV = 15;
 						var newAttacker = Pokemon.newAttacker(data.pokemon[m]['name'], data.pokemon[m]['fastMoves'][n], data.pokemon[m]['specialMoves'][p], level, attackIV);
 
@@ -1491,7 +1517,7 @@ function getBestRaiders(raidDefender) {
 						var battle = new Battle(newAttacker, defender, 'none');
 
 						// todo: make sure we show the next level 1 pokemon as well
-						if(lastQuickDamage == battle.attacker.selectedFast.damage && battle.attacker.level != 39) {
+						if(lastQuickDamage == battle.attacker.selectedFast.damage && battle.attacker.level != 40) {
 							continue;
 						}			
 						

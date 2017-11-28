@@ -4,8 +4,11 @@ function Pokemon(name) {
 };
 
 
-Pokemon.newDefender = function(name, fastMove, specialMove, level) {
+Pokemon.newDefender = function(name, fastMove, specialMove, level, isRaidBoss) {
 	var attackIV = 15;
+	if(typeof isRadiBoss != undefined && isRaidBoss == -1) {
+		attackIV = -1;
+	}
 	var me = Pokemon.newAttacker(name, fastMove, specialMove, level, attackIV);
 	if( !me ) {
 		return null;
@@ -69,14 +72,29 @@ Pokemon.newAttacker = function(name, fastMove, specialMove, level, attackIV) {
 	me['selectedSpecial'] = [];
 	me['selectedSpecial']['name'] = specialMove;
 	
-	me['level'] = level;
-	me['attackIV'] = parseInt(attackIV);
+	// ugly raid boss hack
+	if(parseInt(attackIV) == -1) {
+		me['level'] = 40;
+		me['attackIV'] = 15;
+	} else {
+		me['level'] = level;
+		me['attackIV'] = parseInt(attackIV);
+	}
 	me['defenseIV'] = 15;
 	me['staminaIV'] = 15;
 
-	me['attack'] = (me['baseAtk'] + me['attackIV'] ) * data.cpm[ me['level'] ];
-	me['defense'] = (me['baseDef'] + me['defenseIV'] ) * data.cpm[ me['level'] ];
-	me['HP'] = Math.floor( (me['baseSta'] + me['staminaIV'] ) * data.cpm[ me['level'] ] );
+	// ugly raid boss hack
+	if(parseInt(attackIV) == -1) {  // level is actually the cpm in this case
+		console.log('raid boss');
+		console.log(level);
+		me['attack'] = (me['baseAtk'] + me['attackIV'] ) * level;
+		me['defense'] = (me['baseDef'] + me['defenseIV'] ) * level;
+		me['HP'] = Math.floor( (me['baseSta'] + me['staminaIV'] ) * level );
+	} else {
+		me['attack'] = (me['baseAtk'] + me['attackIV'] ) * data.cpm[ me['level'] ];
+		me['defense'] = (me['baseDef'] + me['defenseIV'] ) * data.cpm[ me['level'] ];
+		me['HP'] = Math.floor( (me['baseSta'] + me['staminaIV'] ) * data.cpm[ me['level'] ] );
+	}
 	me['fightHP'] = Math.max(10, me['HP']);
 
 	me['selectedFast']['type'] = data.moves[ me['selectedFast']['name'] ]['type'];
